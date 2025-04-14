@@ -1,0 +1,8 @@
+for continous testing compile main.cpp to a.exe
+for production compile main.cpp to compile.exe
+
+gcc must be installed on the system
+
+Have to add python interpreter and many more
+
+Should make autosetting of environment variables
