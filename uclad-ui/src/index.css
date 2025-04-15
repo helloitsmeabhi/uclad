@@ -46,10 +46,16 @@ body {
   text-transform: uppercase;
   font-size: 11px;
   padding: 8px 12px;
-  color: #6f7679;
+  color: #79776f;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+position: fixed;
+}
+.textarea{
+  margin-top: 30px;
+  border-color:1px solid #6b6b6b;
+
 }
 
 .btn-sidebar {
@@ -59,6 +65,8 @@ body {
   font-size: 14px;
   cursor: pointer;
   padding: 3px 6px;
+  margin-top: 30px;
+
 }
 
 .btn-sidebar:hover {
@@ -121,6 +129,15 @@ body {
   transition: all 0.2s ease;
 }
 
+#runrundebug{
+  background-color: rgb(45, 43, 43);
+  color: whitesmoke;
+  border:1px solid #868282;
+  border-radius: 5px;
+  align-items: center;
+  margin-left: 20px;
+  margin-top: 50px;
+}
 .folder-contents.hidden {
   display: none;
 }
@@ -151,6 +168,7 @@ body {
   align-items: center;
   cursor: pointer;
   color: #858585;
+
 }
 
 .activity-icon.active {
@@ -176,6 +194,47 @@ body {
   background-color: var(--vscode-bg);
   border-bottom: 1px solid var(--vscode-border);
 }
+
+#fileSearchInput {
+  width: 90%;
+  margin: 8px auto;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-top: 30px;
+}
+
+#searchResults {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.search-result-item {
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.search-result-item:hover {
+  background-color: #eee;
+}
+
+#commit-btn {
+  background-color: #4CAF50;  
+  color: white;
+  border: none;
+  padding: 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  
+}
+
+
+
+#commit-btn:hover {
+  background-color: #45a049; 
+}
+
 
 .btn-toolbar {
   background-color: transparent;
