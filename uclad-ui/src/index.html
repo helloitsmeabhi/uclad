@@ -11,22 +11,22 @@
     <div class="row g-0" style="height: 100vh;">
       <!-- Activity Bar (left sidebar with icons) -->
       <div class="activity-bar">
-        <div class="activity-icon active" title="Explorer">
+        <div class="activity-icon active" title="Explorer" id="explorerIcon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3zM9 3v18"/></svg>
         </div>
-        <div class="activity-icon" title="Search">
+        <div class="activity-icon" title="Search" id="searchIcon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </div>
-        <div class="activity-icon" title="Source Control">
+        <div class="activity-icon" title="Source Control" id="sourceIcon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
         </div>
-        <div class="activity-icon" title="Run and Debug">
+        <div class="activity-icon" title="Run and Debug" id="runanddebugIcon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
         </div>
       </div>
 
       <!-- Sidebar -->
-      <div class="col-2 sidebar">
+      <div class="col-2 sidebar" id="explorer">
         <div class="sidebar-header">
           <span>EXPLORER</span>
           <button id="openDirectory" class="btn-sidebar" title="Open Folder">
@@ -49,6 +49,22 @@
           <!-- Files and folders will be populated here -->
         </div>
       </div>
+      <div class="col-2 sidebar" id="search">
+        <div class="sidebar-header">
+          <span>Search</span>
+        </div>
+      </div>
+      <div class="col-2 sidebar" id="source">
+        <div class="sidebar-header">
+          <span>Source Control</span>
+        </div>
+        <textarea></textarea>
+      </div>
+      <div class="col-2 sidebar" id="runanddebug">
+        <div class="sidebar-header">
+          <span>Run & Debug</span>
+        </div>
+      </div>
 
       <!-- Main content -->
       <div class="col d-flex flex-column main-content">
@@ -58,6 +74,8 @@
             Save
           </button>
         </div>
+        
+
         
         <div id="editorTabs" class="editor-tabs" style="border-color: aliceblue;">
           <!-- Tabs will be added dynamically -->
@@ -105,6 +123,41 @@
   </div>
 
 <script src="./renderer.js"></script>
+<script>
+  const icons = document.querySelectorAll('.activity-icon');
+const sidebars = {
+  explorer: document.getElementById('explorer'),
+  search: document.getElementById('search'),
+  source: document.getElementById('source'),
+  runanddebug: document.getElementById('runanddebug'),
+};
 
+// Utility function to clear all
+function clearActiveStates() {
+  icons.forEach(icon => icon.classList.remove('active'));
+  Object.values(sidebars).forEach(sidebar => sidebar.classList.remove('active'));
+}
+
+// Map icon ID to sidebar ID
+const iconToSidebar = {
+  searchIcon: 'search',
+  explorerIcon: 'explorer',
+  sourceIcon: 'source',
+  runanddebugIcon: 'runanddebug',
+};
+
+// Attach event listeners
+icons.forEach(icon => {
+  icon.addEventListener('click', () => {
+    const id = icon.getAttribute('id');
+    const target = iconToSidebar[id] || 'explorer'; // default to explorer if undefined
+
+    clearActiveStates();
+    icon.classList.add('active');
+    sidebars[target].classList.add('active');
+  });
+});
+
+</script>
 </body>
 </html>

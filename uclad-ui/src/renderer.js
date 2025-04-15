@@ -154,9 +154,14 @@ async function loadFile(filepath) {
 
 // Helper: Update line numbers in the editor
 function updateLineNumbers() {
-  const lines = editor.value.split('\n');
-  lineNumbers.innerHTML = lines.map((_, i) => i + 1).join('<br>');
+  const lines = editor.value.split('\n').length;
+  lineNumbers.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
 }
+editor.addEventListener('input', updateLineNumbers);
+editor.addEventListener('scroll', () => {
+  lineNumbers.scrollTop = editor.scrollTop;
+});
+
 
 // Helper: Update editor content when a file has been saved
 function markFileAsSaved() {
@@ -496,4 +501,5 @@ function updateCursorPosition() {
 
 // Initialize with empty line numbers
 updateLineNumbers();
+
 
