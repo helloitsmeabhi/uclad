@@ -5,8 +5,6 @@ const openDirectoryBtn = document.getElementById('openDirectory');
 const newFileBtn = document.getElementById('newFile');
 const saveButton = document.getElementById('saveButton');
 const runCodeBtn = document.getElementById('runCode');
-const rundebugBtn = document.getElementById('runrundebug');
-const searchInput = document.getElementById('fileSearchInput');
 const clearTerminalBtn = document.getElementById('clearTerminal');
 const directoryPathElement = document.getElementById('directoryPath');
 const fileExplorer = document.getElementById('fileExplorer');
@@ -313,36 +311,6 @@ async function populateExplorer(directoryPath) {
   }
   
 
-  searchInput.addEventListener('input', async () => {
-    const query = searchInput.value.trim().toLowerCase();
-    if (!query) {
-      searchResults.innerHTML = '';
-      return;
-    }
-  
-    try {
-      // Assuming this returns the list of files in the currently open directory
-      const files = await window.electronAPI.getFilesInCurrentDirectory();
-  
-      const matchedFiles = files.filter(file => file.toLowerCase().includes(query));
-  
-      searchResults.innerHTML = '';
-  
-      matchedFiles.forEach(file => {
-        const li = document.createElement('li');
-        li.textContent = file;
-        li.classList.add('search-result-item');
-        li.addEventListener('click', () => {
-          // You can call a function here to open the file
-          window.electronAPI.openFileByName(file);
-        });
-        searchResults.appendChild(li);
-      });
-    } catch (error) {
-      console.error('Error searching files:', error);
-    }
-  });
-
 // Event: Open directory button click
 openDirectoryBtn.addEventListener('click', async () => {
   try {
@@ -477,7 +445,7 @@ runCodeBtn.addEventListener('click', async () => {
     appendToTerminal('No file open to run');
     return;
   }
-
+  
   // Save if there are unsaved changes
   if (hasUnsavedChanges) {
     try {
@@ -489,12 +457,12 @@ runCodeBtn.addEventListener('click', async () => {
       return;
     }
   }
-
+  
   appendToTerminal(`$ Running: ${currentFilePath.split(/[/\\]/).pop()}`);
-
+  
   try {
     const result = await window.electronAPI.runCode(currentFilePath);
-
+    
     if (result.success) {
       appendToTerminal(result.output || '(No output)');
       appendToTerminal('Process completed successfully');
@@ -506,43 +474,6 @@ runCodeBtn.addEventListener('click', async () => {
     appendToTerminal(`Error running code: ${error.message}`);
   }
 });
-
-rundebugBtn.addEventListener('click', async () => {
-  if (!currentFilePath) {
-    appendToTerminal('No file open to run');
-    return;
-  }
-
-  // Save if there are unsaved changes
-  if (hasUnsavedChanges) {
-    try {
-      await window.electronAPI.saveFile(currentFilePath, editor.value);
-      markFileAsSaved();
-    } catch (error) {
-      console.error('Debug result:', error);
-      appendToTerminal(`Error saving file: ${error.message}`);
-      return;
-    }
-  }
-
-  appendToTerminal(`$ Running: ${currentFilePath.split(/[/\\]/).pop()}`);
-
-  try {
-    const result = await window.electronAPI.runrundebug(currentFilePath);
-
-    if (result.success) {
-      appendToTerminal(result.output || '(No output)');
-      appendToTerminal('Process completed successfully');
-    } else {
-      appendToTerminal(`Debug result(Error): ${result.output}`);
-    }
-  } catch (error) {
-    console.error('Error running code:', error);
-    appendToTerminal(`Error running code: ${error.message}`);
-  }
-});
-
-
 
 // Event: Clear terminal button click
 clearTerminalBtn.addEventListener('click', () => {

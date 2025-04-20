@@ -4,7 +4,6 @@ const path = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
 
-
 let mainWindow;
 // Add this global variable to track the current directory
 let currentDirectory = null;
@@ -40,16 +39,14 @@ ipcMain.handle('open-directory', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory']
   });
-
-  if (canceled || filePaths.length === 0) {
+  
+  if (canceled) {
     return null;
   }
-
-  currentDirectory = filePaths[0]; // ✅ Set the directory globally
-  console.log('User opened directory:', currentDirectory);
+  // Set the current directory when a directory is opened
+  currentDirectory = filePaths[0];
   return currentDirectory;
 });
-
 
 ipcMain.handle('get-directory-contents', async (event, folderPath) => {
   try {
@@ -67,35 +64,6 @@ ipcMain.handle('get-directory-contents', async (event, folderPath) => {
     throw error;
   }
 });
-
-ipcMain.handle('get-files', async () => {
-  try {
-    if (!currentDirectory) return [];
-    return fs.readdirSync(currentDirectory).filter(file =>
-      fs.statSync(path.join(currentDirectory, file)).isFile()
-    );
-  } catch (err) {
-    console.error('Error reading directory:', err);
-    return [];
-  }
-});
-
-
-ipcMain.handle('open-file-by-name', async (event, fileName) => {
-  const filePath = path.join(currentDirectory, fileName);
-  try {
-    const content = await fs.promises.readFile(filePath, 'utf-8');
-    return content;
-  } catch (err) {
-    console.error('Error opening file by name:', err);
-    throw err;
-  }
-});
-
-ipcMain.handle('get-current-directory', async () => {
-  return currentDirectory;
-});
-
 
 ipcMain.handle('read-file', async (event, filePath) => {
   try {
