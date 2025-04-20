@@ -21,7 +21,20 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
         </div>
         <div class="activity-icon" title="Run and Debug" id="runanddebugIcon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Play Triangle -->
+            <polygon points="5,3 19,12 5,21" fill="currentColor"/>
+        
+          </svg>
+        </div>
+        <div class="activity-icon" title="Extensions" id="extensionsIcon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="6" height="6" rx="1"></rect>
+            <rect x="14" y="4" width="6" height="6" rx="1"></rect>
+            <rect x="4" y="14" width="6" height="6" rx="1"></rect>
+            <rect x="14" y="14" width="6" height="6" rx="1"></rect>
+          </svg>
         </div>
       </div>
 
@@ -63,6 +76,11 @@
       <div class="col-2 sidebar" id="runanddebug">
         <div class="sidebar-header">
           <span>Run & Debug</span>
+        </div>
+      </div>
+      <div class="col-2 sidebar" id="extensions">
+        <div class="sidebar-header">
+          <span>Programming Tools</span>
         </div>
       </div>
 
@@ -130,6 +148,7 @@ const sidebars = {
   search: document.getElementById('search'),
   source: document.getElementById('source'),
   runanddebug: document.getElementById('runanddebug'),
+  extensions: document.getElementById('extensions'),
 };
 
 // Utility function to clear all
@@ -144,6 +163,7 @@ const iconToSidebar = {
   explorerIcon: 'explorer',
   sourceIcon: 'source',
   runanddebugIcon: 'runanddebug',
+  extensionsIcon: 'extensions',
 };
 
 // Attach event listeners

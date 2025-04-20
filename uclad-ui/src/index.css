@@ -491,3 +491,184 @@ body {
   opacity: 0.9;
 }
 
+/* Add this to your index.css file */
+
+/* Search Input Styles */
+.search-input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  background-color: #2d2d2d;
+  border: 1px solid #3c3c3c;
+  color: #e0e0e0;
+  border-radius: 4px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #007acc;
+}
+
+/* Search Controls */
+.search-controls {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 0 8px;
+}
+
+.search-btn {
+  background-color: #0e639c;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.search-btn:hover {
+  background-color: #1177bb;
+}
+
+.search-nav-btn {
+  background-color: #383838;
+  color: #e0e0e0;
+  border: none;
+  padding: 2px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+.search-nav-btn:hover:not(:disabled) {
+  background-color: #4a4a4a;
+}
+
+.search-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.results-count {
+  margin-left: auto;
+  color: #a0a0a0;
+  font-size: 12px;
+}
+
+/* Search Results */
+.search-results {
+  overflow-y: auto;
+  height: calc(100% - 90px);
+  
+  /* For Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #888 transparent;
+}
+
+/* For Chrome, Edge, and Safari */
+.search-results::-webkit-scrollbar {
+  width: 10px; /* Set width for vertical scrollbar */
+  height: 10px; /* Set height for horizontal scrollbar if needed */
+}
+
+.search-results::-webkit-scrollbar-track {
+  background-color: transparent; /* Transparent background */
+  border-radius: 10px; /* Round corners */
+}
+
+.search-results::-webkit-scrollbar-thumb {
+  background-color: #888; /* Dark gray thumb */
+  border-radius: 10px; /* Round corners */
+}
+
+.search-results::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Darker gray when hovered */
+}
+
+.search-results::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+.search-result-item {
+  padding: 8px;
+  border-bottom: 1px solid #383838;
+  cursor: pointer;
+}
+
+.search-result-item:hover {
+  background-color: #2a2d2e;
+}
+
+.search-result-item.active {
+  background-color: #04395e;
+}
+
+.result-filename {
+  color: #e0e0e0;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.result-preview {
+  color: #a0a0a0;
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  font-family: monospace;
+}
+
+.search-match {
+  background-color: #875b00;
+  color: #ffffff;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.search-highlight {
+  background-color: rgba(234, 92, 0, 0.1);
+  border-left: 2px solid #ea5c00;
+}
+
+.search-info {
+  color: #a0a0a0;
+  padding: 8px;
+  font-style: italic;
+}
+
+.search-error {
+  color: #f14c4c;
+  padding: 8px;
+}
+
+/* Show active sidebar */
+.sidebar {
+  display: none;
+  scrollbar-width: thin;
+  scrollbar-color: #888 transparent;
+}
+/* For Chrome, Edge, and Safari */
+.sidebar::-webkit-scrollbar {
+  width: 10px; /* Set width for vertical scrollbar */
+  height: 10px; /* Set height for horizontal scrollbar if needed */
+  border-radius: 20px;
+}
+.sidebar::-webkit-scrollbar-track {
+  background-color: transparent; /* Transparent background */
+  border-radius: 20px; /* Round corners */
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: #888; /* Dark gray thumb */
+  border-radius: 20px; /* Round corners */
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Darker gray when hovered */
+}
+.sidebar::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+/* Show active sidebar */
+
+.sidebar.active {
+  display: block;
+}

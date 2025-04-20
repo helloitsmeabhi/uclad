@@ -5,6 +5,8 @@ const fs = require('fs');
 const { exec } = require('child_process');
 
 let mainWindow;
+// Add this global variable to track the current directory
+let currentDirectory = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -41,7 +43,9 @@ ipcMain.handle('open-directory', async () => {
   if (canceled) {
     return null;
   }
-  return filePaths[0];
+  // Set the current directory when a directory is opened
+  currentDirectory = filePaths[0];
+  return currentDirectory;
 });
 
 ipcMain.handle('get-directory-contents', async (event, folderPath) => {
@@ -122,3 +126,71 @@ ipcMain.handle('create-new-file', async (event, directoryPath, fileName) => {
 
 
 
+ipcMain.handle('search-in-files', async (event, query) => {
+  // Implementation to search through files in the opened directory
+  const results = [];
+  
+  // Check if a directory is currently open
+  if (!currentDirectory) {
+    console.log('No directory selected for search');
+    return { error: 'No directory open', results: [] };
+  }
+  
+  console.log(`Searching for "${query}" in ${currentDirectory}`);
+  
+  // Function to recursively search in files
+  const searchInDirectory = async (dirPath) => {
+    try {
+      const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
+      
+      for (const entry of entries) {
+        const fullPath = path.join(dirPath, entry.name);
+        
+        if (entry.isDirectory()) {
+          // Skip node_modules and other common directories to exclude
+          if (!['node_modules', '.git', 'dist', '.vscode'].includes(entry.name)) {
+            await searchInDirectory(fullPath);
+          }
+        } else {
+          try {
+            // Skip binary files or files that are too large
+            const stats = await fs.promises.stat(fullPath);
+            if (stats.size > 1024 * 1024) continue; // Skip files larger than 1MB
+            
+            // Read file content
+            const fileContent = await fs.promises.readFile(fullPath, 'utf8');
+            
+            // Search for matches
+            let matchPosition = fileContent.toLowerCase().indexOf(query.toLowerCase());
+            if (matchPosition !== -1) {
+              // Get relative path for display
+              const relativePath = path.relative(currentDirectory, fullPath);
+              
+              results.push({
+                fileName: entry.name,
+                filePath: fullPath,
+                relativePath: relativePath,
+                fileContent: fileContent,
+                matchPosition: matchPosition,
+                searchTerm: query
+              });
+            }
+          } catch (error) {
+            console.error(`Error searching in file ${fullPath}:`, error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`Error reading directory ${dirPath}:`, error);
+    }
+  };
+  
+  try {
+    await searchInDirectory(currentDirectory);
+    console.log(`Found ${results.length} results`);
+    return results;
+  } catch (error) {
+    console.error('Error searching files:', error);
+    return { error: error.message, results: [] };
+  }
+});

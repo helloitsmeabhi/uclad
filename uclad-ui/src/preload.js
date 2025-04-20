@@ -12,5 +12,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   createNewFile: (directoryPath, fileName) => ipcRenderer.invoke('create-new-file', directoryPath, fileName),
   // Code execution
   runCode: (filePath) => ipcRenderer.invoke('run-code', filePath),
-
+  searchInFiles: (query) => ipcRenderer.invoke('search-in-files', query),
+  
 });
