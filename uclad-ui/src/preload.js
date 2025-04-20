@@ -5,6 +5,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Directory operations
   openDirectory: () => ipcRenderer.invoke('open-directory'),
   getDirectoryContents: (folderPath) => ipcRenderer.invoke('get-directory-contents', folderPath),
+  getCurrentDirectory: () => ipcRenderer.invoke('get-current-directory'),
+
+  getFilesInCurrentDirectory: () => ipcRenderer.invoke('get-files'),
+  openFileByName: (fileName) => ipcRenderer.invoke('open-file-by-name', fileName),
   
   // File operations
   readFile: (filePath) => ipcRenderer.invoke('read-file', filePath),
@@ -14,4 +18,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   runCode: (filePath) => ipcRenderer.invoke('run-code', filePath),
   searchInFiles: (query) => ipcRenderer.invoke('search-in-files', query),
   
+
+  runrundebug: (filePath) => ipcRenderer.invoke('run-code', filePath),
 });
+
+
+
