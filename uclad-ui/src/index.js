@@ -3,11 +3,10 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
-
 let mainWindow;
 // Add this global variable to track the current directory
 let currentDirectory = null;
-
+// Constants for keytar API key storage
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -194,3 +193,6 @@ ipcMain.handle('search-in-files', async (event, query) => {
     return { error: error.message, results: [] };
   }
 });
+
+
+

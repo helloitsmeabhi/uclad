@@ -371,61 +371,62 @@ newFileBtn.addEventListener('click', async () => {
   });
 // Modal dialog utility functions
 function showInputModal(options) {
-    return new Promise((resolve) => {
-      const modal = document.getElementById('input-modal');
-      const titleEl = document.getElementById('modal-title');
-      const messageEl = document.getElementById('modal-message');
-      const inputEl = document.getElementById('modal-input');
-      const cancelBtn = document.getElementById('modal-cancel');
-      const confirmBtn = document.getElementById('modal-confirm');
-      
-      // Set modal content
-      titleEl.textContent = options.title || 'Input';
-      messageEl.textContent = options.message || 'Please enter a value:';
-      inputEl.placeholder = options.placeholder || '';
-      inputEl.value = options.default || '';
-      
-      // Show modal
-      modal.style.display = 'flex';
-      inputEl.focus();
-      
-      // Handle cancel
-      const handleCancel = () => {
-        modal.style.display = 'none';
-        cleanup();
-        resolve(null);
-      };
-      
-      // Handle confirm
-      const handleConfirm = () => {
-        const value = inputEl.value.trim();
-        modal.style.display = 'none';
-        cleanup();
-        resolve(value);
-      };
-      
-      // Handle Enter key
-      const handleKeyDown = (event) => {
-        if (event.key === 'Enter') {
-          handleConfirm();
-        } else if (event.key === 'Escape') {
-          handleCancel();
-        }
-      };
-      
-      // Add event listeners
-      cancelBtn.addEventListener('click', handleCancel);
-      confirmBtn.addEventListener('click', handleConfirm);
-      inputEl.addEventListener('keydown', handleKeyDown);
-      
-      // Cleanup function
-      function cleanup() {
-        cancelBtn.removeEventListener('click', handleCancel);
-        confirmBtn.removeEventListener('click', handleConfirm);
-        inputEl.removeEventListener('keydown', handleKeyDown);
+  return new Promise((resolve) => {
+    const modal = document.getElementById('input-modal');
+    const titleEl = document.getElementById('modal-title');
+    const messageEl = document.getElementById('modal-message');
+    const inputEl = document.getElementById('modal-input');
+    const cancelBtn = document.getElementById('modal-cancel');
+    const confirmBtn = document.getElementById('modal-confirm');
+    
+    // Set modal content
+    titleEl.textContent = options.title || 'Input';
+    messageEl.textContent = options.message || 'Please enter a value:';
+    inputEl.placeholder = options.placeholder || '';
+    inputEl.value = options.default || '';
+    inputEl.type = 'text'; // Ensure it's text type, not password
+    
+    // Show modal
+    modal.style.display = 'flex';
+    inputEl.focus();
+    
+    // Handle cancel
+    const handleCancel = () => {
+      modal.style.display = 'none';
+      cleanup();
+      resolve(null);
+    };
+    
+    // Handle confirm
+    const handleConfirm = () => {
+      const value = inputEl.value.trim();
+      modal.style.display = 'none';
+      cleanup();
+      resolve(value);
+    };
+    
+    // Handle Enter key
+    const handleKeyDown = (event) => {
+      if (event.key === 'Enter') {
+        handleConfirm();
+      } else if (event.key === 'Escape') {
+        handleCancel();
       }
-    });
-  }
+    };
+    
+    // Add event listeners
+    cancelBtn.addEventListener('click', handleCancel);
+    confirmBtn.addEventListener('click', handleConfirm);
+    inputEl.addEventListener('keydown', handleKeyDown);
+    
+    // Cleanup function
+    function cleanup() {
+      cancelBtn.removeEventListener('click', handleCancel);
+      confirmBtn.removeEventListener('click', handleConfirm);
+      inputEl.removeEventListener('keydown', handleKeyDown);
+    }
+  });
+}
 // Event: Save button click
 saveButton.addEventListener('click', async () => {
   if (!currentFilePath || !hasUnsavedChanges) return;
@@ -945,117 +946,5 @@ try {
 }
 }
 
-// // Function to search packages using scoop
-// async function searchScoopPackages(query) {
-//   try {
-//     // Call scoop search via electronAPI
-//     const results = await window.electronAPI.executeCommand(`scoop search ${query}`);
-    
-//     // Parse the results (assuming results are in a specific format)
-//     const searchResults = parseSearchResults(results);
-    
-//     // Display the results in your UI
-//     displaySearchResults(searchResults);
-    
-//     return searchResults;
-//   } catch (error) {
-//     console.error('Error searching scoop packages:', error);
-//     return [];
-//   }
-// }
 
-// // Function to parse the raw search results from scoop
-// function parseSearchResults(rawResults) {
-//   // Scoop typically returns results in a format like:
-//   // Name     Version     Source     Description
-//   // ----     -------     ------     -----------
-//   // app1     1.0.0       main       Description of app1
-//   // app2     2.0.0       extras     Description of app2
-  
-//   const lines = rawResults.split('\n');
-//   const results = [];
-  
-//   // Skip header lines (first 2 lines)
-//   for (let i = 2; i < lines.length; i++) {
-//     const line = lines[i].trim();
-//     if (line) {
-//       // Split by multiple spaces
-//       const parts = line.split(/\s{2,}/);
-//       if (parts.length >= 4) {
-//         results.push({
-//           name: parts[0].trim(),
-//           version: parts[1].trim(),
-//           source: parts[2].trim(),
-//           description: parts[3].trim()
-//         });
-//       }
-//     }
-//   }
-  
-//   return results;
-// }
-
-// // Function to display the search results in the UI
-// function displaySearchResults(results) {
-//   const resultsContainer = document.querySelector('.search-results');
-//   resultsContainer.innerHTML = '';
-  
-//   if (results.length === 0) {
-//     resultsContainer.innerHTML = '<p class="no-results">No packages found</p>';
-//     return;
-//   }
-  
-//   results.forEach(result => {
-//     const resultElement = document.createElement('div');
-//     resultElement.className = 'search-result-item';
-//     resultElement.innerHTML = `
-//       <div class="package-name">${result.name}</div>
-//       <div class="package-version">${result.version}</div>
-//       <div class="package-description">${result.description}</div>
-//       <div class="package-source">${result.source}</div>
-//       <button class="install-button">Install</button>
-//     `;
-    
-//     // Add event listener for install button
-//     const installButton = resultElement.querySelector('.install-button');
-//     installButton.addEventListener('click', () => {
-//       installPackage(result.name);
-//     });
-    
-//     resultsContainer.appendChild(resultElement);
-//   });
-// }
-
-// // Function to install a package
-// async function installPackage(packageName) {
-//   try {
-//     const statusIndicator = document.getElementById('statusIndicator');
-//     statusIndicator.textContent = `Installing ${packageName}...`;
-    
-//     // Call scoop install via electronAPI
-//     await window.electronAPI.executeCommand(`scoop install ${packageName}`);
-    
-//     statusIndicator.textContent = `${packageName} installed successfully!`;
-//     setTimeout(() => { statusIndicator.textContent = 'Ready'; }, 3000);
-//   } catch (error) {
-//     console.error('Error installing package:', error);
-//     statusIndicator.textContent = `Failed to install ${packageName}`;
-//     setTimeout(() => { statusIndicator.textContent = 'Ready'; }, 3000);
-//   }
-// }
-
-// document.getElementById('packageSearchButton').addEventListener('click', () => {
-//   const query = document.getElementById('packageSearchInput').value.trim();
-//   if (query) {
-//     searchScoopPackages(query);
-//   }
-// });
-
-// document.getElementById('packageSearchInput').addEventListener('keydown', (e) => {
-//   if (e.key === 'Enter') {
-//     const query = document.getElementById('packageSearchInput').value.trim();
-//     if (query) {
-//       searchScoopPackages(query);
-//     }
-//   }
-// });
+// Configuration for LLM API

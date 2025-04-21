@@ -672,3 +672,37 @@ body {
 .sidebar.active {
   display: block;
 }
+
+
+
+.suggestions-list {
+  position: absolute; top: 2.2rem; left: 8px;
+  z-index: 1000; width: calc(100% - 16px);
+  background: #fff; border: 1px solid #ccc;
+  border-radius: 4px; list-style: none;
+  max-height: 150px; overflow-y: auto;
+  margin: 0; padding: 0;
+}
+.suggestions-list.hidden { display: none; }
+.suggestions-list li {
+  padding: 0.4em 0.6em; cursor: pointer;
+}
+.suggestions-list li:hover,
+.suggestions-list li.focused {
+  background: #eef;
+}
+
+#ghostText {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  color: #6c757d;
+  opacity: 0.6;
+  font-family: monospace;
+  white-space: pre;
+  padding: 10px;
+  line-height: 1.5;
+  tab-size: 2;
+  overflow: hidden;
+}

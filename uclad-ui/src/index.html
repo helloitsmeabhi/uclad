@@ -23,9 +23,7 @@
         <div class="activity-icon" title="Run and Debug" id="runanddebugIcon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <!-- Play Triangle -->
             <polygon points="5,3 19,12 5,21" fill="currentColor"/>
-        
           </svg>
         </div>
         <div class="activity-icon" title="Extensions" id="extensionsIcon">
@@ -39,7 +37,7 @@
       </div>
 
       <!-- Sidebar -->
-      <div class="col-2 sidebar" id="explorer">
+      <div class="col-2 sidebar active" id="explorer">
         <div class="sidebar-header">
           <span>EXPLORER</span>
           <button id="openDirectory" class="btn-sidebar" title="Open Folder">
@@ -71,7 +69,6 @@
         <div class="sidebar-header">
           <span>Source Control</span>
         </div>
-        <textarea></textarea>
       </div>
       <div class="col-2 sidebar" id="runanddebug">
         <div class="sidebar-header">
@@ -93,15 +90,16 @@
           </button>
         </div>
         
-
-        
         <div id="editorTabs" class="editor-tabs" style="border-color: aliceblue;">
           <!-- Tabs will be added dynamically -->
         </div>
         
         <div class="editor-area">
           <div id="lineNumbers" class="line-numbers"></div>
-          <textarea id="editor" disabled spellcheck="false"></textarea>
+          <div class="editor-container">
+            <textarea id="editor" spellcheck="false"></textarea>
+            <div id="ghostText"></div>
+          </div>
         </div>
         
         <div class="terminal">
@@ -141,43 +139,268 @@
   </div>
 
 <script src="./renderer.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  const icons = document.querySelectorAll('.activity-icon');
-const sidebars = {
-  explorer: document.getElementById('explorer'),
-  search: document.getElementById('search'),
-  source: document.getElementById('source'),
-  runanddebug: document.getElementById('runanddebug'),
-  extensions: document.getElementById('extensions'),
-};
-
-// Utility function to clear all
-function clearActiveStates() {
-  icons.forEach(icon => icon.classList.remove('active'));
-  Object.values(sidebars).forEach(sidebar => sidebar.classList.remove('active'));
-}
-
-// Map icon ID to sidebar ID
-const iconToSidebar = {
-  searchIcon: 'search',
-  explorerIcon: 'explorer',
-  sourceIcon: 'source',
-  runanddebugIcon: 'runanddebug',
-  extensionsIcon: 'extensions',
-};
-
-// Attach event listeners
-icons.forEach(icon => {
-  icon.addEventListener('click', () => {
-    const id = icon.getAttribute('id');
-    const target = iconToSidebar[id] || 'explorer'; // default to explorer if undefined
-
-    clearActiveStates();
-    icon.classList.add('active');
-    sidebars[target].classList.add('active');
+  document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
+    const editor = document.getElementById('editor');
+    const ghostText = document.getElementById('ghostText');
+    const cursorPosition = document.getElementById('cursorPosition');
+    
+    // Current suggestion state
+    let currentSuggestion = '';
+    let hasSuggestion = false;
+    
+    // Utility Functions
+    function synchronizeScrolling() {
+      ghostText.scrollTop = editor.scrollTop;
+      ghostText.scrollLeft = editor.scrollLeft;
+    }
+    
+    function updateGhostText() {
+      if (!hasSuggestion) {
+        ghostText.textContent = '';
+        return;
+      }
+      
+      const cursorPos = editor.selectionStart;
+      const textBeforeCursor = editor.value.substring(0, cursorPos);
+      
+      // Match number of newlines to align ghost text properly
+      const lines = textBeforeCursor.split('\n');
+      const lineBreaks = lines.length - 1;
+      const lastLineContent = lines[lines.length - 1];
+      
+      // Create ghost text content with proper indentation
+      const padding = '\n'.repeat(lineBreaks) + ' '.repeat(lastLineContent.length);
+      ghostText.textContent = padding + currentSuggestion;
+      
+      synchronizeScrolling();
+    }
+    
+    function acceptSuggestion() {
+      if (!hasSuggestion) return false;
+      
+      const cursorPos = editor.selectionStart;
+      editor.value = editor.value.substring(0, cursorPos) + 
+                     currentSuggestion + 
+                     editor.value.substring(cursorPos);
+      
+      // Move cursor to end of inserted text
+      editor.selectionStart = editor.selectionEnd = cursorPos + currentSuggestion.length;
+      
+      // Clear suggestion
+      currentSuggestion = '';
+      hasSuggestion = false;
+      updateGhostText();
+      
+      return true;
+    }
+    
+    function updateCursorPosition() {
+      if (!editor) return;
+      
+      const text = editor.value;
+      const caret = editor.selectionStart;
+      
+      // Calculate line and column
+      let line = 1;
+      let col = 1;
+      
+      for (let i = 0; i < caret; i++) {
+        if (text[i] === '\n') {
+          line++;
+          col = 1;
+        } else {
+          col++;
+        }
+      }
+      
+      cursorPosition.textContent = `Ln ${line}, Col ${col}`;
+      
+      // If cursor moved, update ghost text positioning
+      if (hasSuggestion) {
+        updateGhostText();
+      }
+    }
+    
+    // Get suggestion based on current context
+    function fetchInlineSuggestion() {
+      // Get context for suggestion
+      const cursorPos = editor.selectionStart;
+      const precedingText = editor.value.substring(0, cursorPos);
+      
+      // Call API to get suggestions
+      const key = ''; // Add your API key here
+      
+      if (!key) {
+        console.warn('API key not provided. Please add your Gemini API key.');
+        // For testing, provide a mock suggestion
+        mockSuggestion(precedingText);
+        return;
+      }
+      
+      fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: "Complete this code: " + precedingText }]
+          }]
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(response => {
+        if (response.candidates && response.candidates.length > 0) {
+          const suggestion = response.candidates[0].content?.parts?.[0]?.text || '';
+          if (suggestion) {
+            currentSuggestion = suggestion;
+            hasSuggestion = true;
+            updateGhostText();
+          }
+        }
+      })
+      .catch(err => {
+        console.error('Suggestion error:', err);
+        // Fallback to mock suggestion
+        mockSuggestion(precedingText);
+      });
+    }
+    
+    // Mock suggestion for testing without API key
+    function mockSuggestion(text) {
+      // Simple mock suggestions based on context
+      const mockSuggestions = {
+        'function ': 'myFunction() {\n  \n}',
+        'if ': '(condition) {\n  \n}',
+        'for ': '(let i = 0; i < array.length; i++) {\n  \n}',
+        'const ': 'variable = ',
+        'let ': 'variable = ',
+        'console.': 'log("")',
+        '<div': ' class="">'
+      };
+      
+      // Find a matching prefix
+      for (const prefix in mockSuggestions) {
+        if (text.trim().endsWith(prefix)) {
+          currentSuggestion = mockSuggestions[prefix];
+          hasSuggestion = true;
+          updateGhostText();
+          return;
+        }
+      }
+      
+      // Default suggestion
+      if (text.trim().length > 5) {
+        const lastWord = text.split(/\s/).pop();
+        if (lastWord && lastWord.length > 2) {
+          currentSuggestion = lastWord + 'Suggestion';
+          hasSuggestion = true;
+          updateGhostText();
+        }
+      }
+    }
+    
+    // Event Listeners
+    if (editor) {
+      // Synchronize scrolling
+      editor.addEventListener('scroll', synchronizeScrolling);
+      
+      // Track cursor position
+      editor.addEventListener('click', () => {
+        updateCursorPosition();
+        fetchInlineSuggestion();
+      });
+      
+      editor.addEventListener('keyup', (e) => {
+        updateCursorPosition();
+        
+        // Don't trigger on special keys
+        const nonTriggerKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 
+                                'Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 
+                                'Escape', 'Tab', 'Enter'];
+        
+        if (!nonTriggerKeys.includes(e.key)) {
+          // Clear current suggestion
+          currentSuggestion = '';
+          hasSuggestion = false;
+          ghostText.textContent = '';
+          
+          // Fetch new suggestion after typing pause
+          clearTimeout(editor.suggestionTimer);
+          editor.suggestionTimer = setTimeout(() => {
+            fetchInlineSuggestion();
+          }, 500); // Delay to avoid too many requests
+        }
+      });
+      
+      editor.addEventListener('keydown', (e) => {
+        // Accept suggestion with Tab
+        if (e.key === 'Tab' && hasSuggestion) {
+          e.preventDefault();
+          acceptSuggestion();
+        }
+      });
+      
+      // Initial setup
+      editor.value = '// Start typing here\n// Press Tab to accept suggestions\n';
+      editor.focus();
+      updateCursorPosition();
+    }
+    
+    // Initialize sidebar functionality
+    const icons = document.querySelectorAll('.activity-icon');
+    const sidebars = {
+      explorer: document.getElementById('explorer'),
+      search: document.getElementById('search'),
+      source: document.getElementById('source'),
+      runanddebug: document.getElementById('runanddebug'),
+      extensions: document.getElementById('extensions')
+    };
+    
+    function clearActiveStates() {
+      icons.forEach(icon => icon.classList.remove('active'));
+      Object.values(sidebars).forEach(sidebar => sidebar.classList.remove('active'));
+    }
+    
+    const iconToSidebar = {
+      explorerIcon: 'explorer',
+      searchIcon: 'search',
+      sourceIcon: 'source',
+      runanddebugIcon: 'runanddebug',
+      extensionsIcon: 'extensions'
+    };
+    
+    icons.forEach(icon => {
+      icon.addEventListener('click', () => {
+        const id = icon.getAttribute('id');
+        const targetId = iconToSidebar[id];
+        
+        if (targetId && sidebars[targetId]) {
+          clearActiveStates();
+          icon.classList.add('active');
+          sidebars[targetId].classList.add('active');
+        }
+      });
+    });
+    
+    // Clear terminal button
+    const clearTerminalBtn = document.getElementById('clearTerminal');
+    const terminalOutput = document.getElementById('terminalOutput');
+    
+    if (clearTerminalBtn && terminalOutput) {
+      clearTerminalBtn.addEventListener('click', () => {
+        terminalOutput.innerHTML = '$ Terminal cleared<br>';
+      });
+    }
   });
-});
-
 </script>
 </body>
 </html>

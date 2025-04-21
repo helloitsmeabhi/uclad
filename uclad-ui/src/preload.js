@@ -14,4 +14,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   runCode: (filePath) => ipcRenderer.invoke('run-code', filePath),
   searchInFiles: (query) => ipcRenderer.invoke('search-in-files', query),
   
+  
 });
