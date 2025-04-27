@@ -3,10 +3,11 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
+
 let mainWindow;
 // Add this global variable to track the current directory
 let currentDirectory = null;
-// Constants for keytar API key storage
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -194,5 +195,85 @@ ipcMain.handle('search-in-files', async (event, query) => {
   }
 });
 
+ipcMain.handle('scoop-search', async (event, query) => {
+  return new Promise((resolve, reject) => {
+      exec(`powershell -Command "scoop search ${query}"`, (error, stdout) => {
+          if (error) {
+              reject('Error executing Scoop search');
+              return;
+          }
 
+          const lines = stdout.split('\n').slice(2); // Ignore headers
+          const results = lines.map(line => {
+              const columns = line.split(/\s{2,}/);
+              if (columns.length < 4) return null;
+              return {
+                  name: columns[0],
+                  version: columns[1],
+                  source: columns[2],
+                  binaries: columns[3]
+              };
+          }).filter(row => row); // Remove null values
 
+          resolve(results);
+      });
+  });
+});
+
+function createDialog() {
+  dialogWindow = new BrowserWindow({
+      width: 600,
+      height: 400,
+      show: false,
+      parent: mainWindow,
+      modal: true,
+      frame: false,
+      transparent: true,
+      autoHideMenuBar: true,
+      backgroundColor: '#00000000',
+      webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+          preload: path.join(__dirname, 'preload.js')
+      }
+  });
+  dialogWindow.loadFile(path.join(__dirname,'dialog.html'));
+  dialogWindow.show();
+  dialogWindow.on('closed', () => {
+      dialogWindow = null;
+  });
+}
+
+ipcMain.handle('open-command-dialog', () => {
+  createDialog();
+  return true;
+});
+ipcMain.handle('install-package', (event, packageName) => {
+  return new Promise((resolve, reject) => {
+      if (!packageName) {
+          reject(`No command defined for ${packageName}`);
+          return;
+      }
+
+      const child = exec(`powershell -Command "scoop install ${packageName}"`);
+
+      child.stdout.on('data', (data) => {
+          if (dialogWindow) {
+              dialogWindow.webContents.send('command-output', data);
+          }
+      });
+
+      child.stderr.on('data', (data) => {
+          if (dialogWindow) {
+              dialogWindow.webContents.send('command-output', `ERROR: ${data}`);
+          }
+      });
+
+      child.on('close', (code) => {
+          if (dialogWindow) {
+              dialogWindow.webContents.send('command-complete', code);
+          }
+          resolve(code);
+      });
+  });
+});

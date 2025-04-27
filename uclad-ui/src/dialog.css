@@ -1,0 +1,210 @@
+body {
+    background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1));
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    background-blend-mode: overlay;
+    background-color: transparent !important;
+}
+  nav{
+    background: rgba(0, 0, 255, 0.215);backdrop-filter: blur(10px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  .spinner {
+    width: 44px;
+    height: 44px;
+    animation: spinner-y0fdc1 2s infinite ease;
+    transform-style: preserve-3d;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+   }
+   
+   .spinner > div {
+    background-color: rgba(0,77,255,0.2);
+    height: 100%;
+    position: absolute;
+    width: 100%;
+    border: 2px solid #004dff;
+   }
+   
+   .spinner div:nth-of-type(1) {
+    transform: translateZ(-22px) rotateY(180deg);
+   }
+   
+   .spinner div:nth-of-type(2) {
+    transform: rotateY(-270deg) translateX(50%);
+    transform-origin: top right;
+   }
+   
+   .spinner div:nth-of-type(3) {
+    transform: rotateY(270deg) translateX(-50%);
+    transform-origin: center left;
+   }
+   
+   .spinner div:nth-of-type(4) {
+    transform: rotateX(90deg) translateY(-50%);
+    transform-origin: top center;
+   }
+   
+   .spinner div:nth-of-type(5) {
+    transform: rotateX(-90deg) translateY(50%);
+    transform-origin: bottom center;
+   }
+   
+   .spinner div:nth-of-type(6) {
+    transform: translateZ(22px);
+   }
+   
+   @keyframes spinner-y0fdc1 {
+    0% {
+     transform: rotate(45deg) rotateX(-25deg) rotateY(25deg);
+    }
+   
+    50% {
+     transform: rotate(45deg) rotateX(-385deg) rotateY(25deg);
+    }
+   
+    100% {
+     transform: rotate(45deg) rotateX(-385deg) rotateY(385deg);
+    }
+   }
+   .hero-section {
+    background-color: #0026ff5d;
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+  }
+  
+  .hero-section h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
+  
+  .hero-section p {
+    font-size: 1.25rem;
+    margin-bottom: 30px;
+  }
+  
+  .features-section {
+    padding: 60px 0;
+  }
+  
+  .feature-item {
+    text-align: center;
+    color: white;
+  }
+  
+  .feature-item i {
+    font-size: 3rem;
+    color: #00000043;
+    margin-bottom: 20px;
+  }
+  
+  .cta-section {
+    background-color: #0026ff5d;
+    color: white;
+    padding: 60px 0;
+    text-align: center;
+  }
+  
+  .cta-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+  }
+  
+  .cta-section p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+  }
+  
+  .cta-section .btn {
+    font-size: 1.2rem;
+    padding: 12px 40px;
+    background-color: #ff7043;
+    border-color: #ff7043;
+  }
+  .feature-logo {
+    margin-top: 20px;
+  }
+  button#minBtn, button#maxBtn, button#closeBtn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    padding: 0;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+    backdrop-filter: blur(5px); /* Adds a glass effect */
+  }
+  main#main-content{
+    padding-top: 58px;
+  }
+  /* Specific Colors for Buttons with Transparency */
+  button#closeBtn {
+    background-color: rgba(255, 95, 95, 0.6); /* Semi-transparent Red */
+  }
+  
+  button#maxBtn {
+    background-color: rgba(95, 159, 255, 0.6); /* Semi-transparent Blue */
+  }
+  
+  button#minBtn {
+    background-color: rgba(255, 200, 87, 0.6); /* Semi-transparent Yellow */
+  }
+  
+  /* Hover Effects */
+  button#minBtn:hover,
+  button#maxBtn:hover,
+  button#closeBtn:hover {
+    opacity: 1; /* Fully opaque on hover */
+    cursor: pointer;
+  }
+  
+  /* Optional Focus Outline */
+  button:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.6); /* Optional for accessibility */
+  }
+  
+  /* Style the scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px; /* Set width for vertical scrollbar */
+    height: 10px; /* Set height for horizontal scrollbar */
+  }
+  
+  /* Style the track (the empty space behind the thumb) */
+  ::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0); /* Light gray background */
+    border-radius: 10px; /* Round corners */
+  }
+  
+  /* Style the thumb (the draggable part of the scrollbar) */
+  ::-webkit-scrollbar-thumb {
+    background-color: #888; /* Dark gray thumb */
+    border-radius: 10px; /* Round corners */
+  }
+  
+  /* Add hover effect on the thumb */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #555; /* Darker gray when hovered */
+  }
+  
+  /* Optional: Style the corner where the horizontal and vertical scrollbars meet */
+  ::-webkit-scrollbar-corner {
+    background-color: #f1f1f1;
+  }
+  #navbar {
+    -webkit-app-region: drag; /* Makes the navbar draggable */
+  }
+  
+  #navbar .navbar-toggler,
+  #navbar .nav-link,
+  #navbar button {
+    -webkit-app-region: no-drag; /* Prevents dragging on interactive elements */
+  }

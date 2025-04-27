@@ -4,7 +4,9 @@
   <meta charset="UTF-8">
   <title>Electron IDE</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link href="./index.css" rel="stylesheet">
+  
 </head>
 <body>
   <div class="container-fluid p-0">
@@ -17,13 +19,37 @@
         <div class="activity-icon" title="Search" id="searchIcon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </div>
-        <div class="activity-icon" title="Source Control" id="sourceIcon">
+        <!-- <div class="activity-icon" title="Source Control" id="sourceIcon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><line x1="6" y1="9" x2="6" y2="21"></line></svg>
+        </div> -->
+        <div class="activity-icon" title="Pair Programmer" id="pairIcon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Bot Head -->
+            <rect x="5" y="4" width="14" height="12" rx="2" ry="2"></rect>
+            <!-- Bot Antenna -->
+            <line x1="12" y1="4" x2="12" y2="2"></line>
+            <circle cx="12" cy="2" r="0.5"></circle>
+            <!-- Bot Eyes -->
+            <circle cx="9" cy="9" r="1"></circle>
+            <circle cx="15" cy="9" r="1"></circle>
+            <!-- Bot Mouth - smile -->
+            <path d="M9 13c.8 1 1.5 1.5 3 1.5s2.2-.5 3-1.5"></path>
+            <!-- Connection Lines -->
+            <path d="M8 18v2"></path>
+            <path d="M16 18v2"></path>
+            <!-- Base -->
+            <path d="M7 20h10"></path>
+            <!-- Code brackets to show programming -->
+            <path d="M3 8l2 2-2 2"></path>
+            <path d="M21 8l-2 2 2 2"></path>
+          </svg>
         </div>
         <div class="activity-icon" title="Run and Debug" id="runanddebugIcon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Play Triangle -->
             <polygon points="5,3 19,12 5,21" fill="currentColor"/>
+        
           </svg>
         </div>
         <div class="activity-icon" title="Extensions" id="extensionsIcon">
@@ -37,7 +63,7 @@
       </div>
 
       <!-- Sidebar -->
-      <div class="col-2 sidebar active" id="explorer">
+      <div class="col-2 sidebar" id="explorer">
         <div class="sidebar-header">
           <span>EXPLORER</span>
           <button id="openDirectory" class="btn-sidebar" title="Open Folder">
@@ -69,17 +95,58 @@
         <div class="sidebar-header">
           <span>Source Control</span>
         </div>
+        <textarea></textarea>
       </div>
       <div class="col-2 sidebar" id="runanddebug">
         <div class="sidebar-header">
-          <span>Run & Debug</span>
+          <span>Run </span>
+        </div>
+      
+        <div class="sidebar-body px-2 mt-3">
+      
+          <!-- Detected Language (Optional Display) -->
+          <div class="mb-3 text-muted small">
+            <strong>Detected:</strong> <span id="detectedLanguage">Auto</span>
+          </div>
+      
+          <!-- Run & Debug Buttons -->
+          <div class="d-grid gap-2 mb-3">
+            <button id="runBtn" class="btn btn-primary">▶ Run</button>
+            <!-- <button id="debugBtn" class="btn btn-warning">🐞 Debug</button> -->
+          </div>
         </div>
       </div>
       <div class="col-2 sidebar" id="extensions">
         <div class="sidebar-header">
           <span>Programming Tools</span>
         </div>
+
+        <div class="sidebar-search mt-2 px-2" style="width: 95%; margin: auto 5px;">
+          <div class="d-flex align-items-center p-2">
+            <input type="text" class="form-control" placeholder="Search tools..." id="toolSearch">
+            <button id="SearchTool" class="btn btn-primary ms-2">Search</button>
+          </div>
+
+          <!-- Move the results container OUTSIDE the input/button wrapper -->
+          <div id="searchToolResults" class="mt-3 d-none">
+            <!-- Results inserted via JavaScript -->
+          </div>
+        </div>
       </div>
+      <div class="col-2 sidebar" id="pairProgrammer">
+        <div class="sidebar-header">
+          <span>Pair Programmer</span>
+        </div>
+        <div id="chat-container">
+          <div id="chat-output" class="chat-output"></div>
+            <div class="d-flex align-items-center p-2">
+            <input type="text" id="chat-input" placeholder="Ask me anything..." class="chat-input">
+            <button id="send-message" class="btn btn-primary ms-2">Send</button>
+            </div>
+        </div>
+      </div>
+
+
 
       <!-- Main content -->
       <div class="col d-flex flex-column main-content">
@@ -90,16 +157,15 @@
           </button>
         </div>
         
+
+        
         <div id="editorTabs" class="editor-tabs" style="border-color: aliceblue;">
           <!-- Tabs will be added dynamically -->
         </div>
         
         <div class="editor-area">
           <div id="lineNumbers" class="line-numbers"></div>
-          <div class="editor-container">
-            <textarea id="editor" spellcheck="false"></textarea>
-            <div id="ghostText"></div>
-          </div>
+          <textarea id="editor" disabled spellcheck="false"></textarea>
         </div>
         
         <div class="terminal">
@@ -141,266 +207,315 @@
 <script src="./renderer.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // DOM Elements
-    const editor = document.getElementById('editor');
-    const ghostText = document.getElementById('ghostText');
-    const cursorPosition = document.getElementById('cursorPosition');
+  
+ const icons = document.querySelectorAll('.activity-icon');
+const sidebars = {
+  explorer: document.getElementById('explorer'),
+  search: document.getElementById('search'),
+  source: document.getElementById('source'),
+  pairProgrammer: document.getElementById('pairProgrammer'),
+  runanddebug: document.getElementById('runanddebug'),
+  extensions: document.getElementById('extensions'),
+};
+
+// Utility function to clear all
+function clearActiveStates() {
+  icons.forEach(icon => icon.classList.remove('active'));
+  Object.values(sidebars).forEach(sidebar => sidebar.classList.remove('active'));
+}
+
+// Map icon ID to sidebar ID
+const iconToSidebar = {
+  searchIcon: 'search',
+  explorerIcon: 'explorer',
+  sourceIcon: 'source',
+  pairIcon: 'pairProgrammer',
+  runanddebugIcon: 'runanddebug',
+  extensionsIcon: 'extensions',
+};
+
+// Attach event listeners
+icons.forEach(icon => {
+  icon.addEventListener('click', () => {
+    const id = icon.getAttribute('id');
+    const target = iconToSidebar[id] || 'explorer'; // default to explorer if undefined
+
+    clearActiveStates();
+    icon.classList.add('active');
+    sidebars[target].classList.add('active');
+  });
+});
+
+// Initialize with explorer active
+document.getElementById('explorerIcon').classList.add('active');
+sidebars.explorer.classList.add('active');
+
+
+
+// Chatbot functionality with API integration and Markdown support
+const chatInput = document.getElementById('chat-input');
+const chatOutput = document.getElementById('chat-output');
+const sendButton = document.getElementById('send-message');
+
+// Configure marked options for safe rendering
+marked.setOptions({
+  breaks: true, // Add line breaks
+  gfm: true,    // Use GitHub Flavored Markdown
+  sanitize: false, // Don't sanitize HTML (we'll handle this differently)
+  highlight: function(code, language) {
+    // Add syntax highlighting if you include a library like highlight.js
+    return code;
+  }
+});
+
+// Handle sending the message
+sendButton.addEventListener('click', () => {
+  const message = chatInput.value.trim();
+  if (message) {
+    // Render user message with markdown (escape HTML first for security)
+    appendMessage('You', message, true);
+    chatInput.value = '';
     
-    // Current suggestion state
-    let currentSuggestion = '';
-    let hasSuggestion = false;
+    // Show loading indicator
+    const loadingId = showLoadingIndicator();
     
-    // Utility Functions
-    function synchronizeScrolling() {
-      ghostText.scrollTop = editor.scrollTop;
-      ghostText.scrollLeft = editor.scrollLeft;
-    }
-    
-    function updateGhostText() {
-      if (!hasSuggestion) {
-        ghostText.textContent = '';
-        return;
-      }
-      
-      const cursorPos = editor.selectionStart;
-      const textBeforeCursor = editor.value.substring(0, cursorPos);
-      
-      // Match number of newlines to align ghost text properly
-      const lines = textBeforeCursor.split('\n');
-      const lineBreaks = lines.length - 1;
-      const lastLineContent = lines[lines.length - 1];
-      
-      // Create ghost text content with proper indentation
-      const padding = '\n'.repeat(lineBreaks) + ' '.repeat(lastLineContent.length);
-      ghostText.textContent = padding + currentSuggestion;
-      
-      synchronizeScrolling();
-    }
-    
-    function acceptSuggestion() {
-      if (!hasSuggestion) return false;
-      
-      const cursorPos = editor.selectionStart;
-      editor.value = editor.value.substring(0, cursorPos) + 
-                     currentSuggestion + 
-                     editor.value.substring(cursorPos);
-      
-      // Move cursor to end of inserted text
-      editor.selectionStart = editor.selectionEnd = cursorPos + currentSuggestion.length;
-      
-      // Clear suggestion
-      currentSuggestion = '';
-      hasSuggestion = false;
-      updateGhostText();
-      
-      return true;
-    }
-    
-    function updateCursorPosition() {
-      if (!editor) return;
-      
-      const text = editor.value;
-      const caret = editor.selectionStart;
-      
-      // Calculate line and column
-      let line = 1;
-      let col = 1;
-      
-      for (let i = 0; i < caret; i++) {
-        if (text[i] === '\n') {
-          line++;
-          col = 1;
-        } else {
-          col++;
-        }
-      }
-      
-      cursorPosition.textContent = `Ln ${line}, Col ${col}`;
-      
-      // If cursor moved, update ghost text positioning
-      if (hasSuggestion) {
-        updateGhostText();
-      }
-    }
-    
-    // Get suggestion based on current context
-    function fetchInlineSuggestion() {
-      // Get context for suggestion
-      const cursorPos = editor.selectionStart;
-      const precedingText = editor.value.substring(0, cursorPos);
-      
-      // Call API to get suggestions
-      const key = ''; // Add your API key here
-      
-      if (!key) {
-        console.warn('API key not provided. Please add your Gemini API key.');
-        // For testing, provide a mock suggestion
-        mockSuggestion(precedingText);
-        return;
-      }
-      
-      fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: "Complete this code: " + precedingText }]
+    // Fetch response from API
+    fetchBotResponse(message)
+      .then(response => {
+        // Remove loading indicator
+        removeLoadingIndicator(loadingId);
+        // Display the bot response with markdown rendering
+        appendMessage('Bot', response, false);
+      });
+  }
+});
+
+// Also send message when Enter key is pressed
+chatInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault(); // Prevent default to avoid newline
+    sendButton.click();
+  }
+  // Allow Shift+Enter for multi-line input
+});
+
+// Show loading indicator while waiting for response
+function showLoadingIndicator() {
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'loading-indicator';
+  loadingDiv.textContent = 'Bot is typing...';
+  chatOutput.appendChild(loadingDiv);
+  chatOutput.scrollTop = chatOutput.scrollHeight;
+  return loadingDiv.id = 'loading-' + Date.now();
+}
+
+// Remove loading indicator
+function removeLoadingIndicator(id) {
+  const loadingDiv = document.getElementById(id);
+  if (loadingDiv) {
+    loadingDiv.remove();
+  }
+}
+
+// Safely escape HTML to prevent XSS in user input
+function escapeHTML(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Append a message to the chat window with markdown support
+function appendMessage(sender, message, isUser) {
+  const messageContainer = document.createElement('div');
+  messageContainer.className = isUser ? 'user-message' : 'bot-message';
+  
+  // Create sender label
+  const senderLabel = document.createElement('div');
+  senderLabel.className = 'message-sender';
+  senderLabel.textContent = sender + ':';
+  messageContainer.appendChild(senderLabel);
+  
+  // Create message content with markdown
+  const messageContent = document.createElement('div');
+  messageContent.className = 'message-content';
+  
+  // For user messages, escape HTML before rendering markdown to prevent XSS
+  // For bot messages, we trust the content (it's coming from our API)
+  if (isUser) {
+    messageContent.innerHTML = marked.parse(escapeHTML(message));
+  } else {
+    messageContent.innerHTML = marked.parse(message);
+  }
+  
+  messageContainer.appendChild(messageContent);
+  chatOutput.appendChild(messageContainer);
+  chatOutput.scrollTop = chatOutput.scrollHeight; // Scroll to the bottom
+}
+
+// Fetch bot response from API
+async function fetchBotResponse(message) {
+  const key = ''; // Add your API key here
+  
+  if (!key) {
+    console.warn('API key not provided. Falling back to local responses.');
+    return getLocalBotResponse(message);
+  }
+  
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ 
+            text: `You are a helpful programming assistant in an IDE. Respond to this message from the user using Markdown formatting where appropriate (e.g. code blocks with appropriate language syntax): "${message}"` 
           }]
-        })
+        }]
       })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(response => {
-        if (response.candidates && response.candidates.length > 0) {
-          const suggestion = response.candidates[0].content?.parts?.[0]?.text || '';
-          if (suggestion) {
-            currentSuggestion = suggestion;
-            hasSuggestion = true;
-            updateGhostText();
-          }
-        }
-      })
-      .catch(err => {
-        console.error('Suggestion error:', err);
-        // Fallback to mock suggestion
-        mockSuggestion(precedingText);
-      });
-    }
-    
-    // Mock suggestion for testing without API key
-    function mockSuggestion(text) {
-      // Simple mock suggestions based on context
-      const mockSuggestions = {
-        'function ': 'myFunction() {\n  \n}',
-        'if ': '(condition) {\n  \n}',
-        'for ': '(let i = 0; i < array.length; i++) {\n  \n}',
-        'const ': 'variable = ',
-        'let ': 'variable = ',
-        'console.': 'log("")',
-        '<div': ' class="">'
-      };
-      
-      // Find a matching prefix
-      for (const prefix in mockSuggestions) {
-        if (text.trim().endsWith(prefix)) {
-          currentSuggestion = mockSuggestions[prefix];
-          hasSuggestion = true;
-          updateGhostText();
-          return;
-        }
-      }
-      
-      // Default suggestion
-      if (text.trim().length > 5) {
-        const lastWord = text.split(/\s/).pop();
-        if (lastWord && lastWord.length > 2) {
-          currentSuggestion = lastWord + 'Suggestion';
-          hasSuggestion = true;
-          updateGhostText();
-        }
-      }
-    }
-    
-    // Event Listeners
-    if (editor) {
-      // Synchronize scrolling
-      editor.addEventListener('scroll', synchronizeScrolling);
-      
-      // Track cursor position
-      editor.addEventListener('click', () => {
-        updateCursorPosition();
-        fetchInlineSuggestion();
-      });
-      
-      editor.addEventListener('keyup', (e) => {
-        updateCursorPosition();
-        
-        // Don't trigger on special keys
-        const nonTriggerKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 
-                                'Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 
-                                'Escape', 'Tab', 'Enter'];
-        
-        if (!nonTriggerKeys.includes(e.key)) {
-          // Clear current suggestion
-          currentSuggestion = '';
-          hasSuggestion = false;
-          ghostText.textContent = '';
-          
-          // Fetch new suggestion after typing pause
-          clearTimeout(editor.suggestionTimer);
-          editor.suggestionTimer = setTimeout(() => {
-            fetchInlineSuggestion();
-          }, 500); // Delay to avoid too many requests
-        }
-      });
-      
-      editor.addEventListener('keydown', (e) => {
-        // Accept suggestion with Tab
-        if (e.key === 'Tab' && hasSuggestion) {
-          e.preventDefault();
-          acceptSuggestion();
-        }
-      });
-      
-      // Initial setup
-      editor.value = '// Start typing here\n// Press Tab to accept suggestions\n';
-      editor.focus();
-      updateCursorPosition();
-    }
-    
-    // Initialize sidebar functionality
-    const icons = document.querySelectorAll('.activity-icon');
-    const sidebars = {
-      explorer: document.getElementById('explorer'),
-      search: document.getElementById('search'),
-      source: document.getElementById('source'),
-      runanddebug: document.getElementById('runanddebug'),
-      extensions: document.getElementById('extensions')
-    };
-    
-    function clearActiveStates() {
-      icons.forEach(icon => icon.classList.remove('active'));
-      Object.values(sidebars).forEach(sidebar => sidebar.classList.remove('active'));
-    }
-    
-    const iconToSidebar = {
-      explorerIcon: 'explorer',
-      searchIcon: 'search',
-      sourceIcon: 'source',
-      runanddebugIcon: 'runanddebug',
-      extensionsIcon: 'extensions'
-    };
-    
-    icons.forEach(icon => {
-      icon.addEventListener('click', () => {
-        const id = icon.getAttribute('id');
-        const targetId = iconToSidebar[id];
-        
-        if (targetId && sidebars[targetId]) {
-          clearActiveStates();
-          icon.classList.add('active');
-          sidebars[targetId].classList.add('active');
-        }
-      });
     });
     
-    // Clear terminal button
-    const clearTerminalBtn = document.getElementById('clearTerminal');
-    const terminalOutput = document.getElementById('terminalOutput');
-    
-    if (clearTerminalBtn && terminalOutput) {
-      clearTerminalBtn.addEventListener('click', () => {
-        terminalOutput.innerHTML = '$ Terminal cleared<br>';
-      });
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
     }
-  });
+    
+    const data = await response.json();
+    
+    if (data.candidates && data.candidates.length > 0) {
+      return data.candidates[0].content?.parts?.[0]?.text || 'Sorry, I couldn\'t generate a response.';
+    } else {
+      throw new Error('No response generated');
+    }
+  } catch (error) {
+    console.error('Error fetching bot response:', error);
+    return getLocalBotResponse(message);
+  }
+}
+
+// Fallback local response generator with markdown
+function getLocalBotResponse(message) {
+  const lowerMessage = message.toLowerCase();
+  
+  if (lowerMessage.includes('hello')) {
+    return "Hello! How can I assist you with your code today?";
+  } else if (lowerMessage.includes('help')) {
+    return "I can help you with coding problems, explain concepts, or suggest improvements to your code. What are you working on?";
+  } else if (lowerMessage.includes('javascript') || lowerMessage.includes('js')) {
+    return "JavaScript is a versatile programming language. Here's a simple example:\n\n```javascript\nfunction greet(name) {\n  return `Hello, ${name}!`;\n}\n\nconsole.log(greet('Developer'));\n```";
+  } else if (lowerMessage.includes('python')) {
+    return "Python is known for its readability. Here's a quick example:\n\n```python\ndef greet(name):\n    return f\"Hello, {name}!\"\n\nprint(greet('Developer'))\n```";
+  } else if (lowerMessage.includes('error')) {
+    return "If you're encountering an error, try to provide the error message and some context. I can help troubleshoot!\n\nCommon debugging steps:\n- Check syntax errors\n- Verify variable scope\n- Check function parameters";
+  } else {
+    return "I'm your coding assistant! I can help with writing code, debugging issues, or explaining programming concepts.\n\nSome things I can help with:\n- Code explanations\n- Debugging help\n- Language syntax\n- Best practices";
+  }
+}
+
+// Add these CSS styles to make the chat look better
+function addChatStyles() {
+  const style = document.createElement('style');
+  style.textContent = `
+    #chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    .chat-output {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      background-color: #1e1e1e;
+      border-bottom: 1px solid #454545;
+      font-size:12px;
+    }
+    
+    .chat-input {
+      padding: 8px;
+      background-color: #2d2d2d;
+      color: #e0e0e0;
+      border: 1px solid #454545;
+      border-radius: 4px;
+      margin: auto 5px;
+      width: calc(100% - 80px);
+      font-family: inherit;
+      flex: 1;
+    }
+    
+    .user-message, .bot-message {
+      margin-bottom: 12px;
+      padding: 8px;
+      border-radius: 4px;
+      max-width: 85%;
+    }
+    
+    .user-message {
+      background-color: #264f78;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+    
+    .bot-message {
+      background-color: #2d2d2d;
+      align-self: flex-start;
+    }
+    
+    .message-sender {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    
+    .message-content {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    
+    .message-content pre {
+      background-color: #1a1a1a;
+      padding: 8px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    
+    .loading-indicator {
+      font-style: italic;
+      color: #888;
+      margin: 8px 0;
+    }
+    
+    /* Markdown styling */
+    .message-content code {
+      background-color: #1a1a1a;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Consolas', 'Monaco', monospace;
+    }
+    
+    .message-content pre {
+      margin: 10px 0;
+    }
+    
+    .message-content h1, .message-content h2, .message-content h3 {
+      margin-top: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .message-content ul, .message-content ol {
+      padding-left: 20px;
+    }
+    
+    .message-content p {
+      margin: 8px 0;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// Initialize
+addChatStyles();
+
 </script>
 </body>
 </html>

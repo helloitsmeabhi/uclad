@@ -371,62 +371,61 @@ newFileBtn.addEventListener('click', async () => {
   });
 // Modal dialog utility functions
 function showInputModal(options) {
-  return new Promise((resolve) => {
-    const modal = document.getElementById('input-modal');
-    const titleEl = document.getElementById('modal-title');
-    const messageEl = document.getElementById('modal-message');
-    const inputEl = document.getElementById('modal-input');
-    const cancelBtn = document.getElementById('modal-cancel');
-    const confirmBtn = document.getElementById('modal-confirm');
-    
-    // Set modal content
-    titleEl.textContent = options.title || 'Input';
-    messageEl.textContent = options.message || 'Please enter a value:';
-    inputEl.placeholder = options.placeholder || '';
-    inputEl.value = options.default || '';
-    inputEl.type = 'text'; // Ensure it's text type, not password
-    
-    // Show modal
-    modal.style.display = 'flex';
-    inputEl.focus();
-    
-    // Handle cancel
-    const handleCancel = () => {
-      modal.style.display = 'none';
-      cleanup();
-      resolve(null);
-    };
-    
-    // Handle confirm
-    const handleConfirm = () => {
-      const value = inputEl.value.trim();
-      modal.style.display = 'none';
-      cleanup();
-      resolve(value);
-    };
-    
-    // Handle Enter key
-    const handleKeyDown = (event) => {
-      if (event.key === 'Enter') {
-        handleConfirm();
-      } else if (event.key === 'Escape') {
-        handleCancel();
+    return new Promise((resolve) => {
+      const modal = document.getElementById('input-modal');
+      const titleEl = document.getElementById('modal-title');
+      const messageEl = document.getElementById('modal-message');
+      const inputEl = document.getElementById('modal-input');
+      const cancelBtn = document.getElementById('modal-cancel');
+      const confirmBtn = document.getElementById('modal-confirm');
+      
+      // Set modal content
+      titleEl.textContent = options.title || 'Input';
+      messageEl.textContent = options.message || 'Please enter a value:';
+      inputEl.placeholder = options.placeholder || '';
+      inputEl.value = options.default || '';
+      
+      // Show modal
+      modal.style.display = 'flex';
+      inputEl.focus();
+      
+      // Handle cancel
+      const handleCancel = () => {
+        modal.style.display = 'none';
+        cleanup();
+        resolve(null);
+      };
+      
+      // Handle confirm
+      const handleConfirm = () => {
+        const value = inputEl.value.trim();
+        modal.style.display = 'none';
+        cleanup();
+        resolve(value);
+      };
+      
+      // Handle Enter key
+      const handleKeyDown = (event) => {
+        if (event.key === 'Enter') {
+          handleConfirm();
+        } else if (event.key === 'Escape') {
+          handleCancel();
+        }
+      };
+      
+      // Add event listeners
+      cancelBtn.addEventListener('click', handleCancel);
+      confirmBtn.addEventListener('click', handleConfirm);
+      inputEl.addEventListener('keydown', handleKeyDown);
+      
+      // Cleanup function
+      function cleanup() {
+        cancelBtn.removeEventListener('click', handleCancel);
+        confirmBtn.removeEventListener('click', handleConfirm);
+        inputEl.removeEventListener('keydown', handleKeyDown);
       }
-    };
-    
-    // Add event listeners
-    cancelBtn.addEventListener('click', handleCancel);
-    confirmBtn.addEventListener('click', handleConfirm);
-    inputEl.addEventListener('keydown', handleKeyDown);
-    
-    // Cleanup function
-    function cleanup() {
-      cancelBtn.removeEventListener('click', handleCancel);
-      confirmBtn.removeEventListener('click', handleConfirm);
-      inputEl.removeEventListener('keydown', handleKeyDown);
-    }
-  });
-}
+    });
+  }
 // Event: Save button click
 saveButton.addEventListener('click', async () => {
   if (!currentFilePath || !hasUnsavedChanges) return;
@@ -947,4 +946,137 @@ try {
 }
 
 
-// Configuration for LLM API
+document.addEventListener('DOMContentLoaded', function () {
+  const searchInput = document.getElementById('toolSearch');
+  const searchButton = document.getElementById('SearchTool');
+  const searchResults = document.getElementById('searchToolResults');
+
+  async function performSearch() {
+      const query = searchInput.value.trim();
+      if (!query) {
+          searchResults.classList.add('d-none');
+          searchResults.innerHTML = '';
+          return;
+      }
+
+      searchResults.classList.remove('d-none');
+      searchResults.innerHTML = '<div class="text-center py-3">Searching...</div>';
+      try {
+          // Fix 1: Ensure IPC channel name matches ('scoop-search' instead of 'search-scoop')
+          const results = await window.electronAPI.search(query);
+
+          if (!results || results.length === 0) {
+              searchResults.innerHTML = '<div class="text-center py-3">No results found</div>';
+              return;
+          }
+
+          // Fix 2: Omit the first two rows of the results (header rows)
+          const filteredResults = results.slice(2); // Skip the first two rows
+
+          // Fix 3: Add null checks and default values
+          let tableRows = filteredResults.map(item => `
+              <tr>
+                  <td>${item.name || ''}</td>
+                  <td>${item.version || ''}</td>
+                  <td>${item.source || ''}</td>
+                  <td>${item.binaries || ''}</td>
+                  <td>
+                  <button class="btn btn-sm btn-primary install-btn" data-name="${item.name}" id="${item.name}">
+                    Install
+                  </button>
+                </td>
+              </tr>
+          `).join('');
+          searchResults.addEventListener('click', async(event) => {
+            if (event.target.classList.contains('install-btn')) {
+              const packageName = event.target.dataset.name;
+              try{
+                await window.electronAPI.openCommandDialog();
+                await window.electronAPI.install(packageName);
+                
+              } catch (error) {
+                console.error(`Error executing ${packageName}:`, error);
+            }
+            }
+          });
+          // Fix 4: Proper HTML structure with error handling
+          const resultsHTML = tableRows 
+          ? `<div style="background-color:rgba(245, 247, 252, 0.85);">
+                  <div class="p-2">
+                      <div style="max-height: 250px; overflow-y: auto;">
+                          <table class="table table-hover mb-0">
+                              <thead style="position: sticky; top: 0; background: linear-gradient(135deg, #3b5de7, #4a6cf7); color: white;">
+                                  <tr>
+                                      <th class="py-2">Name</th>
+                                      <th class="py-2">Version</th>
+                                      <th class="py-2">Source</th>
+                                      <th class="py-2">Binaries</th>
+                                      <th class="py-2">Actions</th>
+                                  </tr>
+                              </thead>
+                              <tbody>${tableRows}</tbody>
+                          </table>
+                      </div>
+                  </div>
+              </div>`
+          : '<div class="text-center py-2" style="background-color: rgba(245, 247, 252, 0.85);">No valid results found</div>';        searchResults.innerHTML = resultsHTML;
+
+      } catch (error) {
+          console.error('Search error:', error);
+          searchResults.innerHTML = '<div class="text-center py-3 text-danger">Error fetching results</div>';
+      }
+  }
+
+  // Fix 5: Add input field enter key support
+  searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') performSearch();
+  });
+  searchButton.addEventListener('click', performSearch);
+});
+
+function setupLanguageButton(languageId) {
+  document.getElementById(languageId).addEventListener('click', async () => {
+      try {
+          await window.electronAPI.openCommandDialog();
+          await window.electronAPI.runCommand(languageId);
+      } catch (error) {
+          console.error(`Error executing ${languageId}:`, error);
+      }
+  });
+}
+
+const runbtn=document.getElementById('runBtn');
+runbtn.addEventListener('click', async () => {
+  if (!currentFilePath) {
+    appendToTerminal('No file open to run');
+    return;
+  }
+  
+  // Save if there are unsaved changes
+  if (hasUnsavedChanges) {
+    try {
+      await window.electronAPI.saveFile(currentFilePath, editor.value);
+      markFileAsSaved();
+    } catch (error) {
+      console.error('Error saving before run:', error);
+      appendToTerminal(`Error saving file: ${error.message}`);
+      return;
+    }
+  }
+  
+  appendToTerminal(`$ Running: ${currentFilePath.split(/[/\\]/).pop()}`);
+  
+  try {
+    const result = await window.electronAPI.runCode(currentFilePath);
+    
+    if (result.success) {
+      appendToTerminal(result.output || '(No output)');
+      appendToTerminal('Process completed successfully');
+    } else {
+      appendToTerminal(`Error: ${result.output}`);
+    }
+  } catch (error) {
+    console.error('Error running code:', error);
+    appendToTerminal(`Error running code: ${error.message}`);
+  }
+});

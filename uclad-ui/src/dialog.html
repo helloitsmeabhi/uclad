@@ -1,0 +1,68 @@
+<!-- dialog.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Command Output</title>
+    <style>
+       #output {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 30px;
+    margin: 10px;
+    border-radius: 15px;
+    height: 300px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    /* Add these lines */
+    margin-top: 60px; /* Adjust based on your navbar height */
+    position: relative;
+    z-index: 1; /* Ensure it stays below navbar if needed */
+}
+    </style>
+        <link rel="stylesheet" href="./dialog.css" />
+        <link rel="stylesheet" href="./assets/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="./assets/css/bootstrap-icons.css"/>
+        <script src="./assets/js/bootstrap.bundle.min.js"></script>
+</head>
+<body style="background-color: rgba(0, 0, 0, 0);">
+    <nav class="navbar navbar-dark" id="navbar" style="position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; font-size: large;">
+        <div class="container-fluid">
+            <!-- Logo -->
+            <a class="navbar-brand" href="#">
+                <img src="./assets/images/program.png" alt="Logo" width="30" height="30" 
+                     class="d-inline-block align-text-top" 
+                     style="border-radius: 20px; backdrop-filter: blur(10px);">
+            </a>
+    
+            <!-- Close Button (Right-aligned) -->
+            <div class="ms-auto">
+                <button type="button" class="btn btn-danger" id="closeBtn" title="Close" 
+                        style="background-color: rgba(0, 0, 0, 0.132); backdrop-filter: blur(10px);">
+                    <i class="bi bi-x-lg"></i> <!-- Close Icon -->
+                </button>
+            </div>
+        </div>
+    </nav>
+    <div id="output"></div>
+    
+    <!-- <script src="./assets/js/scripts.js"></script> -->
+    <script>
+        const output = document.getElementById('output');
+        const closeBtn = document.getElementById('closeBtn');
+
+        window.electronAPI.onCommandOutput((event, data) => {
+            output.textContent += data;
+            output.scrollTop = output.scrollHeight;
+        });
+
+        window.electronAPI.onCommandComplete((event, code) => {
+            output.textContent += `\nProcess exited with code ${code}`;
+            closeBtn.style.display = 'block';
+        });
+
+        closeBtn.addEventListener('click', () => {
+            window.close();
+        });
+    </script>
+</body>
+</html>
