@@ -3,6 +3,7 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
+const https = require('https');
 
 let mainWindow;
 // Add this global variable to track the current directory
@@ -12,6 +13,9 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    // show:false,
+    // autoHideMenuBar: true,
+    // frame: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -20,6 +24,8 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname,'index.html'));
+  mainWindow.maximize();
+  mainWindow.show();
   // mainWindow.webContents.openDevTools(); // Uncomment for debugging
 }
 
@@ -33,7 +39,25 @@ app.whenReady().then(() => {
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
 });
+ipcMain.on('close', () => {
+  app.quit();
+});
 
+ipcMain.on('minimize', () => {
+  const win = BrowserWindow.getFocusedWindow();
+  if (win) win.minimize();
+});
+
+ipcMain.on('maximize', () => {
+  const win = BrowserWindow.getFocusedWindow();
+  if (win) {
+    if (win.isMaximized()) {
+      win.restore();
+    } else {
+      win.maximize();
+    }
+  }
+});
 // IPC Handlers
 ipcMain.handle('open-directory', async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
@@ -275,5 +299,41 @@ ipcMain.handle('install-package', (event, packageName) => {
           }
           resolve(code);
       });
+  });
+});
+ipcMain.handle('get-scoop-details', async (event, pkgName) => {
+  const url = `https://raw.githubusercontent.com/ScoopInstaller/Main/master/bucket/${pkgName}.json`;
+
+  return new Promise((resolve, reject) => {
+    https.get(url, (res) => {
+      let data = '';
+      if (res.statusCode !== 200) {
+        resolve(null); // Not found or error
+        return;
+      }
+
+      res.on('data', (chunk) => (data += chunk));
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          resolve(json);
+        } catch (e) {
+          console.error('JSON parse error:', e);
+          resolve(null);
+        }
+      });
+    }).on('error', (err) => {
+      console.error('Fetch error:', err);
+      resolve(null);
+    });
+  });
+});
+ipcMain.handle('get-branches', async (event, dirPath) => {
+  return new Promise((resolve, reject) => {
+    exec('git branch', { cwd: dirPath }, (err, stdout) => {
+      if (err) return reject(err);
+      const branches = stdout.split('\n').map(line => line.trim()).filter(Boolean);
+      resolve(branches);
+    });
   });
 });

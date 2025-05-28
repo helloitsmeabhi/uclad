@@ -15,6 +15,7 @@ const terminalOutput = document.getElementById('terminalOutput');
 const cursorPosition = document.getElementById('cursorPosition');
 const fileTypeIndicator = document.getElementById('fileTypeIndicator');
 const statusIndicator = document.getElementById('statusIndicator');
+const runfiles = document.getElementById('runFiles');
 
 // File type mapping
 const fileTypes = {
@@ -23,7 +24,78 @@ const fileTypes = {
   'css': 'CSS',
   'html': 'HTML',
   'md': 'Markdown',
-  'txt': 'Plain Text'
+  'txt': 'Plain Text',
+  'py': 'Python',
+  'java': 'Java',
+  'c': 'C',
+  'cpp': 'C++',
+  'sh': 'Shell Script',
+  'go': 'Go',
+  'rb': 'Ruby',
+  'php': 'PHP',
+  'rs': 'Rust',
+  'ts': 'TypeScript',
+  'lua': 'Lua',
+  'swift': 'Swift',
+  'kt': 'Kotlin',
+  'rsx': 'React JSX',
+  'tsx': 'React TSX',
+  'xml': 'XML',
+  'yaml': 'YAML',
+  'yml': 'YAML',
+  'sql': 'SQL',
+  'csv': 'CSV',
+  'log': 'Log File',
+  'txt': 'Text File',
+  'png': 'Image File',
+  'jpg': 'Image File',
+  'jpeg': 'Image File',
+  'gif': 'Image File',
+  'svg': 'SVG Image',
+  'pdf': 'PDF Document',
+  'doc': 'Word Document',
+  'docx': 'Word Document',
+  'xls': 'Excel Spreadsheet',
+  'xlsx': 'Excel Spreadsheet',
+  'ppt': 'PowerPoint Presentation',
+  'pptx': 'PowerPoint Presentation',
+  'zip': 'Compressed Archive',
+  'tar': 'Compressed Archive',
+  'gz': 'Compressed Archive',
+  'bat': 'Batch File',
+  'exe': 'Executable File',
+  'dll': 'Dynamic Link Library',
+  'ps1': 'PowerShell Script',
+  'psm1': 'PowerShell Module',
+  'psd1': 'PowerShell Data File',
+  'ps1xml': 'PowerShell XML File',
+  'vbs': 'VBScript File',
+  'wsf': 'Windows Script File',
+  'sh': 'Shell Script',
+  'bash': 'Bash Script',
+  'zsh': 'Zsh Script',
+  'fish': 'Fish Shell Script',
+  'pl': 'Perl Script',
+  'r': 'R Script',
+  'scala': 'Scala Script',
+  'dart': 'Dart Script',
+  'clj': 'Clojure Script',
+  'cljc': 'Clojure Script',
+  'groovy': 'Groovy Script',
+  'asm': 'Assembly Language',
+  'h': 'C Header File',
+  'hpp': 'C++ Header File',
+  'hlsl': 'HLSL Shader',
+  'glsl': 'GLSL Shader',
+  'cs': 'C# Script',
+  'fs': 'F# Script',
+  'vb': 'Visual Basic Script',
+  'm': 'Objective-C Source File',
+  'mm': 'Objective-C++ Source File',
+  'swift': 'Swift Source File',
+  'kt': 'Kotlin Source File',
+  'dart': 'Dart Source File',
+  'default': 'Unknown File Type'
 };
 
 // State variables
@@ -193,6 +265,28 @@ function markFileAsUnsaved() {
     }
   }
 }
+document.getElementById('showbranch').addEventListener('click', async () => {
+  const dirPath= directoryPathElement.textContent;
+  if (!dirPath) {
+    alert('Please select a Git folder first.');
+    return;
+  }
+
+  try {
+    const branches = await window.electronAPI.getGitBranches(dirPath);
+    const listContainer = document.getElementById('branchList');
+    listContainer.innerHTML = '';
+
+    branches.forEach(branch => {
+      const div = document.createElement('div');
+      div.textContent = branch;
+      listContainer.appendChild(div);
+    });
+  } catch (err) {
+    console.error('Error fetching branches:', err);
+    document.getElementById('branchList').textContent = 'Error loading branches.';
+  }
+});
 
 // Helper: Add output to terminal
 function appendToTerminal(text) {
@@ -232,7 +326,31 @@ async function populateExplorer(directoryPath) {
       appendToTerminal(`Error: ${err.message}`);
     }
   }
-  
+  async function populateRun(directoryPath) {
+    try{
+      const contents = await window.electronAPI.getDirectoryContents(directoryPath);
+      directoryPathElement.textContent = directoryPath;
+      currentDirectory = directoryPath;
+      runfiles.innerHTML = '';
+      const sortedDirs = contents.filter(e => e.isDirectory).sort((a, b) => a.name.localeCompare(b.name));
+      const sortedFiles = contents.filter(e => !e.isDirectory).sort((a, b) => a.name.localeCompare(b.name));
+      sortedDirs.forEach(dir => {
+        const folderElement = createFolder(dir);
+        runfiles.appendChild(folderElement);
+      });
+      sortedFiles.forEach(file => {
+        const fileElement = createRunFile(file);
+        runfiles.appendChild(fileElement);
+      });
+      statusIndicator.textContent = 'Run directory loaded';
+      setTimeout(() => { statusIndicator.textContent = 'Ready'; }, 2000);
+
+
+    }catch (err) {
+      console.error('Run Error:', err);
+      appendToTerminal(`Error: ${err.message}`);
+    }
+  }
   function createFolder(entry, depth = 0) {
     const wrapper = document.createElement('div');
     wrapper.className = 'folder-wrapper';
@@ -293,11 +411,12 @@ async function populateExplorer(directoryPath) {
   }
   
   
-  
-  
+let selectionOrder = 0; 
   function createFile(file) {
     const fileElement = document.createElement('div');
-    fileElement.className = 'file';
+    fileElement.className = 'file clickable-name';
+    fileElement.style.textDecoration = 'none'; // Underline for clickable effect
+    fileElement.style.color='white'; // Ensure underline is visible
     fileElement.textContent = file.name;
     fileElement.dataset.path = file.path;
   
@@ -310,6 +429,90 @@ async function populateExplorer(directoryPath) {
     return fileElement;
   }
   
+  function createRunFile(file) {
+  const fileWrapper = document.createElement('div');
+  fileWrapper.className = 'file-wrapper';
+
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.className = 'file-checkbox';
+  checkbox.dataset.path = file.path;
+  checkbox.dataset.name = file.name;
+  checkbox.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      e.target.dataset.selectedOrder = selectionOrder++;
+    } else {
+      e.target.removeAttribute('data-selected-order');
+    }
+  });
+
+  const label = document.createElement('label');
+  label.textContent = file.name;
+  label.className = 'file-label';
+
+  fileWrapper.appendChild(checkbox);
+  fileWrapper.appendChild(label);
+
+  return fileWrapper;
+}
+const runBatchBtn = document.getElementById('runBatchBtn');
+runBatchBtn.addEventListener('click', async () => {
+  try {
+    await runSelectedFiles();
+    selectionOrder = 0;
+    document.querySelectorAll('.file-checkbox').forEach(cb => cb.removeAttribute('data-selected-order'));
+
+  } catch (error) {
+    console.error('Error running batch files:', error);
+    appendToTerminal(`Error running batch files: ${error.message}`);
+  }
+});
+async function runSelectedFiles() {
+  const checkboxes = Array.from(document.querySelectorAll('.file-checkbox:checked'));
+
+  // Sort based on selection order
+  checkboxes.sort((a, b) => {
+    return parseInt(a.dataset.selectedOrder) - parseInt(b.dataset.selectedOrder);
+  });
+
+  for (const cb of checkboxes) {
+    const path = cb.dataset.path;
+    const name = cb.dataset.name;
+
+    if (!path) {
+      appendToTerminal('No file open to run');
+      continue;
+    }
+
+    if (hasUnsavedChanges) {
+      try {
+        await window.electronAPI.saveFile(path, editor.value);
+        markFileAsSaved();
+      } catch (error) {
+        console.error('Error saving before run:', error);
+        appendToTerminal(`Error saving file: ${error.message}`);
+        continue;
+      }
+    }
+
+    appendToTerminal(`$ Running: ${name}`);
+    try {
+      const result = await window.electronAPI.runCode(path);
+      if (result.success) {
+        appendToTerminal(result.output || '(No output)');
+        appendToTerminal('Process completed successfully');
+      } else {
+        appendToTerminal(`Error: ${result.output}`);
+      }
+    } catch (error) {
+      console.error('Error running code:', error);
+      appendToTerminal(`Error running code: ${error.message}`);
+    }
+  }
+}
+
+
+
 
 // Event: Open directory button click
 openDirectoryBtn.addEventListener('click', async () => {
@@ -317,6 +520,7 @@ openDirectoryBtn.addEventListener('click', async () => {
     const directoryPath = await window.electronAPI.openDirectory();
     if (directoryPath) {
       populateExplorer(directoryPath);
+      populateRun(directoryPath);
     }
   } catch (error) {
     console.error('Error opening directory:', error);
@@ -569,10 +773,10 @@ function initializeSearch() {
     searchContainer.appendChild(searchResultsContainer);
     
     // Add event listeners
-    searchButton.addEventListener('click', () => performSearch(searchInput.value));
+    searchButton.addEventListener('click', () => PerformSearch(searchInput.value));
     searchInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
-        performSearch(searchInput.value);
+        PerformSearch(searchInput.value);
       }
     });
     
@@ -594,7 +798,7 @@ function initializeSearch() {
 }
 
 // Perform search across all files in the current directory
-async function performSearch(query) {
+async function PerformSearch(query) {
   if (!query || query.trim() === '') return;
   
   const searchResultsContainer = document.getElementById('searchResults');
@@ -974,19 +1178,6 @@ document.addEventListener('DOMContentLoaded', function () {
           const filteredResults = results.slice(2); // Skip the first two rows
 
           // Fix 3: Add null checks and default values
-          let tableRows = filteredResults.map(item => `
-              <tr>
-                  <td>${item.name || ''}</td>
-                  <td>${item.version || ''}</td>
-                  <td>${item.source || ''}</td>
-                  <td>${item.binaries || ''}</td>
-                  <td>
-                  <button class="btn btn-sm btn-primary install-btn" data-name="${item.name}" id="${item.name}">
-                    Install
-                  </button>
-                </td>
-              </tr>
-          `).join('');
           searchResults.addEventListener('click', async(event) => {
             if (event.target.classList.contains('install-btn')) {
               const packageName = event.target.dataset.name;
@@ -1000,27 +1191,54 @@ document.addEventListener('DOMContentLoaded', function () {
             }
           });
           // Fix 4: Proper HTML structure with error handling
-          const resultsHTML = tableRows 
-          ? `<div style="background-color:rgba(245, 247, 252, 0.85);">
-                  <div class="p-2">
-                      <div style="max-height: 250px; overflow-y: auto;">
-                          <table class="table table-hover mb-0">
-                              <thead style="position: sticky; top: 0; background: linear-gradient(135deg, #3b5de7, #4a6cf7); color: white;">
-                                  <tr>
-                                      <th class="py-2">Name</th>
-                                      <th class="py-2">Version</th>
-                                      <th class="py-2">Source</th>
-                                      <th class="py-2">Binaries</th>
-                                      <th class="py-2">Actions</th>
-                                  </tr>
-                              </thead>
-                              <tbody>${tableRows}</tbody>
-                          </table>
-                      </div>
-                  </div>
-              </div>`
-          : '<div class="text-center py-2" style="background-color: rgba(245, 247, 252, 0.85);">No valid results found</div>';        searchResults.innerHTML = resultsHTML;
+          const resultsHTML = filteredResults.map((item, index) => `
+          <div class="extension-item card mb-2 shadow-sm" data-index="${index}">
+            <div class="card-body d-flex justify-content-between align-items-start">
+              <div class="extension-details">
+                <h5 class="card-title mb-1 clickable-name" data-index="${index}">${item.name || 'Unknown Package'}</h5>
+                <p class="mb-1 text-muted">
+                  Version: ${item.version || 'N/A'}<br>
+                  Source: ${item.source || 'N/A'}<br>
+                  <!--Binaries: ${item.binaries || 'N/A'}-->
+                </p>
+              </div>
+              <div>
+                <button class="btn btn-sm btn-primary install-btn" data-name="${item.name}">
+                  Install
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+        
+                 
+          searchResults.innerHTML = resultsHTML;
+          searchResults.addEventListener('click', async (e) => {
+            const target = e.target;
+            if (target.classList.contains('clickable-name')) {
+              const idx = target.dataset.index;
+              const data = filteredResults[idx];
+              if (!data) return;
 
+              const packageName = data.name;
+              
+              try {
+                // Show loading state
+                showLoadingState(`Searching for "${packageName}"...`);
+                
+                // Perform Google search and scrape data
+                const searchData = await scrapeGoogleSearch(packageName);
+                
+                // Display the scraped data in a dedicated page/section
+                DisplaySearchResults(packageName, searchData);
+                
+              } catch (error) {
+                console.error('Error scraping Google data:', error);
+                showErrorState(`Failed to search for "${packageName}"`);
+              }
+            }
+          });
+          
       } catch (error) {
           console.error('Search error:', error);
           searchResults.innerHTML = '<div class="text-center py-3 text-danger">Error fetching results</div>';
@@ -1033,7 +1251,364 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   searchButton.addEventListener('click', performSearch);
 });
+// Function to scrape Google search results
+async function scrapeGoogleSearch(query) {
+  try {
+    // Use a CORS proxy or backend API to fetch Google search results
+    const searchUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
+      `https://www.google.com/search?q=${encodeURIComponent(query + ' software package')}&num=10`
+    )}`;
+    
+    const response = await fetch(searchUrl);
+    const data = await response.json();
+    const htmlContent = data.contents;
+    
+    // Parse the HTML content
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    
+    // Extract search results
+    const searchResults = [];
+    const resultElements = doc.querySelectorAll('div.g, div[data-ved]');
+    
+    resultElements.forEach((element, index) => {
+      if (index >= 10) return; // Limit to 10 results
+      
+      const titleElement = element.querySelector('h3');
+      const linkElement = element.querySelector('a[href^="http"]');
+      const snippetElement = element.querySelector('.VwiC3b, .s3v9rd, .st');
+      
+      if (titleElement && linkElement) {
+        searchResults.push({
+          title: titleElement.textContent.trim(),
+          url: linkElement.href,
+          snippet: snippetElement ? snippetElement.textContent.trim() : '',
+          domain: new URL(linkElement.href).hostname
+        });
+      }
+    });
+    
+    // Also try to get additional info from specific sites
+    const additionalInfo = await scrapeAdditionalInfo(query);
+    
+    return {
+      query: query,
+      results: searchResults,
+      additionalInfo: additionalInfo,
+      timestamp: new Date().toISOString()
+    };
+    
+  } catch (error) {
+    console.error('Scraping error:', error);
+    throw new Error('Failed to scrape Google search results');
+  }
+}
 
+// Function to scrape additional information from specific sites
+async function scrapeAdditionalInfo(packageName) {
+  const additionalInfo = {
+    github: null,
+    documentation: null,
+    downloads: null
+  };
+
+  try {
+    // Try to get GitHub repository info
+    const githubUrl = `https://api.github.com/search/repositories?q=${encodeURIComponent(packageName)}&per_page=1`;
+    const githubResponse = await fetch(githubUrl);
+    const githubData = await githubResponse.json();
+    
+    if (githubData.items && githubData.items.length > 0) {
+      const repo = githubData.items[0];
+      additionalInfo.github = {
+        name: repo.full_name,
+        description: repo.description,
+        stars: repo.stargazers_count,
+        url: repo.html_url,
+        language: repo.language,
+        updated: repo.updated_at
+      };
+    }
+  } catch (error) {
+    console.log('GitHub API error:', error);
+  }
+
+  return additionalInfo;
+}
+
+// Function to display search results in a dedicated page
+function DisplaySearchResults(packageName, searchData) {
+  // Create or get the results container
+  let resultsContainer = document.getElementById('search-results-container');
+  if (!resultsContainer) {
+    resultsContainer = document.createElement('div');
+    resultsContainer.id = 'search-results-container';
+    resultsContainer.className = 'search-results-page';
+    document.body.appendChild(resultsContainer);
+  }
+
+  // Generate HTML for the results page
+  const resultsHTML = `
+    <div class="search-results-header">
+      <button class="back-button" onclick="closeSearchResults()">← Back</button>
+      <h2>Search Results for "${packageName}"</h2>
+      <p class="search-meta">results found</p>
+    </div>
+
+    <div class="search-results-content">
+      ${searchData.additionalInfo.github ? `
+        <div class="github-info">
+          <h3>🔗 GitHub Repository</h3>
+          <div class="github-card">
+            <h4><a href="${searchData.additionalInfo.github.url}" target="_blank">${searchData.additionalInfo.github.name}</a></h4>
+            <p>${searchData.additionalInfo.github.description || 'No description available'}</p>
+            <div class="github-stats">
+              <span>⭐ ${searchData.additionalInfo.github.stars} stars</span>
+              <span>📝 ${searchData.additionalInfo.github.language || 'N/A'}</span>
+              <span>🕒 Updated: ${new Date(searchData.additionalInfo.github.updated).toLocaleDateString()}</span>
+            </div>
+          </div>
+        </div>
+      ` : ''}
+
+      <div class="web-results">
+        <h3>🌐 Web Search Results</h3>
+        <div class="results-list">
+          ${searchData.results.map(result => `
+            <div class="result-item">
+              <h4><a href="${result.url}" target="_blank">${result.title}</a></h4>
+              <p class="result-url">${result.domain}</p>
+              <p class="result-snippet">${result.snippet}</p>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="search-results-footer">
+      <p>Search performed at: ${new Date(searchData.timestamp).toLocaleString()}</p>
+    </div>
+  `;
+
+  resultsContainer.innerHTML = resultsHTML;
+  resultsContainer.style.display = 'block';
+  
+  // Add CSS styles if not already present
+  addSearchResultsStyles();
+}
+
+// Function to add CSS styles for the search results page
+function addSearchResultsStyles() {
+  if (document.getElementById('search-results-styles')) return;
+
+  const styles = document.createElement('style');
+  styles.id = 'search-results-styles';
+  styles.textContent = `
+    .search-results-page {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 20px;
+      box-sizing: border-box;
+      display: none;
+    }
+
+    .search-results-header {
+      border-bottom: 2px solid #eee;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+
+    .back-button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    .back-button:hover {
+      background: #0056b3;
+    }
+
+    .search-results-header h2 {
+      margin: 10px 0;
+      color: #333;
+    }
+
+    .search-meta {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .github-info, .web-results {
+      margin-bottom: 40px;
+    }
+
+    .github-info h3, .web-results h3 {
+      color: #333;
+      border-left: 4px solid #007bff;
+      padding-left: 15px;
+      margin-bottom: 15px;
+    }
+
+    .github-card {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .github-card h4 {
+      margin: 0 0 10px 0;
+    }
+
+    .github-card a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .github-card a:hover {
+      text-decoration: underline;
+    }
+
+    .github-stats {
+      display: flex;
+      gap: 20px;
+      margin-top: 15px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .result-item {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 15px;
+      background: #fafafa;
+    }
+
+    .result-item h4 {
+      margin: 0 0 5px 0;
+    }
+
+    .result-item a {
+      color: #1a0dab;
+      text-decoration: none;
+    }
+
+    .result-item a:hover {
+      text-decoration: underline;
+    }
+
+    .result-url {
+      color: #006621;
+      font-size: 14px;
+      margin: 5px 0;
+    }
+
+    .result-snippet {
+      color: #545454;
+      line-height: 1.4;
+      margin: 10px 0 0 0;
+    }
+
+    .search-results-footer {
+      border-top: 1px solid #eee;
+      padding-top: 20px;
+      margin-top: 40px;
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+    }
+
+    .loading-state, .error-state {
+      text-align: center;
+      padding: 50px;
+      font-size: 18px;
+    }
+
+    .error-state {
+      color: #dc3545;
+    }
+  `;
+  
+  document.head.appendChild(styles);
+}
+
+// Function to show loading state
+function showLoadingState(message) {
+  let resultsContainer = document.getElementById('search-results-container');
+  if (!resultsContainer) {
+    resultsContainer = document.createElement('div');
+    resultsContainer.id = 'search-results-container';
+    resultsContainer.className = 'search-results-page';
+    document.body.appendChild(resultsContainer);
+  }
+
+  resultsContainer.innerHTML = `
+    <div class="loading-state">
+      <div>🔍 ${message}</div>
+      <div style="margin-top: 20px;">
+        <div class="spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 20px auto;"></div>
+      </div>
+    </div>
+  `;
+  
+  resultsContainer.style.display = 'block';
+  addSearchResultsStyles();
+  
+  // Add spinner animation
+  if (!document.getElementById('spinner-styles')) {
+    const spinnerStyles = document.createElement('style');
+    spinnerStyles.id = 'spinner-styles';
+    spinnerStyles.textContent = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(spinnerStyles);
+  }
+}
+
+// Function to show error state
+function showErrorState(message) {
+  let resultsContainer = document.getElementById('search-results-container');
+  if (!resultsContainer) {
+    resultsContainer = document.createElement('div');
+    resultsContainer.id = 'search-results-container';
+    resultsContainer.className = 'search-results-page';
+    document.body.appendChild(resultsContainer);
+  }
+
+  resultsContainer.innerHTML = `
+    <div class="error-state">
+      <div>❌ ${message}</div>
+      <button class="back-button" onclick="closeSearchResults()" style="margin-top: 20px;">← Back</button>
+    </div>
+  `;
+  
+  resultsContainer.style.display = 'block';
+  addSearchResultsStyles();
+}
+
+// Function to close search results page
+function closeSearchResults() {
+  const resultsContainer = document.getElementById('search-results-container');
+  if (resultsContainer) {
+    resultsContainer.style.display = 'none';
+  }
+}
 function setupLanguageButton(languageId) {
   document.getElementById(languageId).addEventListener('click', async () => {
       try {
@@ -1080,3 +1655,65 @@ runbtn.addEventListener('click', async () => {
     appendToTerminal(`Error running code: ${error.message}`);
   }
 });
+
+document.querySelectorAll('.clickable-name').forEach(el => {
+  el.addEventListener('click', async (e) => {
+    const idx = e.target.dataset.index;
+    const data = filteredResults[idx];
+
+    const packageName = data.name;
+    const filepath = '';
+    const filename = packageName; // just the package name, no .json
+
+    createTab(filename, filepath);
+
+    // Fetch rich package data using Electron backend (web scraping or JSON parsing)
+    const metadata = await window.electronAPI.getScoopPackageDetails(packageName);
+
+    // Pass this to your content area (adjust as needed)
+    renderExtensionDetails(filepath, metadata);
+  });
+});
+
+
+function renderExtensionDetails(filepath, metadata) {
+  const editor = document.getElementById('editorContent');
+  if (!editor) return;
+
+  if (!metadata) {
+    editor.innerHTML = `<p>Error loading package info for <strong>${filepath}</strong>.</p>`;
+    return;
+  }
+
+  editor.innerHTML = `
+    <div class="extension-detail">
+      <h2>${metadata.name}</h2>
+      <p><strong>Version:</strong> ${metadata.version || 'N/A'}</p>
+      <p><strong>Description:</strong> ${metadata.description || 'No description provided.'}</p>
+      <p><strong>Homepage:</strong> <a href="${metadata.homepage}" target="_blank">${metadata.homepage}</a></p>
+      <p><strong>License:</strong> ${metadata.license || 'Unknown'}</p>
+      <pre class="mt-3"><code>${JSON.stringify(metadata, null, 2)}</code></pre>
+    </div>
+  `;
+}
+// // Close Button
+// document.getElementById("closeBtn").addEventListener("click", (e) => {
+//     e.preventDefault();
+//     window.electronAPI.closeApp(); // Securely call the close function
+//   });
+  
+//   // Maximize Button
+//   document.getElementById("maxBtn").addEventListener("click", (e) => {
+//     e.preventDefault();
+//     window.electronAPI.maximizeApp(); // Securely call the maximize function
+//   });
+  
+//   // Minimize Button
+//   document.getElementById("minBtn").addEventListener("click", (e) => {
+//     e.preventDefault();
+//     window.electronAPI.minimizeApp(); // Securely call the minimize function
+//   });
+//   //Navaigation Bar
+//   document.getElementById("navbar").addEventListener("dblclick", () => {
+//     window.electronAPI.maximizeApp(); // Toggle maximize/restore
+//   });

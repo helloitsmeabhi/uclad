@@ -1,14 +1,66 @@
 :root {
-  --vscode-bg: #1e1e1e;
-  --vscode-sidebar-bg: #252526;
-  --vscode-editor-bg: #1e1e1e;
-  --vscode-terminal-bg: #1e1e1e;
-  --vscode-statusbar-bg: #007acc;
-  --vscode-accent: #007acc;
-  --vscode-text: #cccccc;
-  --vscode-tab-active: #1e1e1e;
-  --vscode-tab-inactive: #2d2d2d;
-  --vscode-border: #333333;  /* Set your desired border color here */
+  --vscode-bg: #0b0c10;
+  --vscode-sidebar-bg: rgba(12, 14, 22, 0.9);
+  --vscode-editor-bg: rgba(15, 17, 27, 0.95);
+  --vscode-terminal-bg: rgba(10, 12, 20, 0.95);
+  --vscode-statusbar-bg: rgba(5, 10, 20, 0.9);
+  --vscode-accent: #ff8800; /* Jarvis cyan glow */
+  --vscode-text: #e0f7fa;
+  --vscode-tab-active: rgba(25, 30, 40, 0.9);
+  --vscode-tab-inactive: rgba(20, 25, 35, 0.4);
+  --vscode-border: rgba(0, 249, 255, 0.3);
+}
+
+
+.settings-icon {
+  margin-top: auto;
+  padding: 10px 0;
+  border-top: 1px solid var(--vscode-border);
+}
+#settings {
+  width: 0;
+  overflow: hidden;
+  transition: width 0.3s ease;
+  background-color: var(--vscode-sideBar-background);
+  border-left: 1px solid var(--vscode-border);
+}
+
+#settings.open {
+  width: 250px;
+}
+
+#themeSelect {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  background: var(--vscode-editor-background);
+  color: var(--vscode-editor-foreground);
+  border: 1px solid var(--vscode-border);
+  border-radius: 4px;
+}
+
+/* Default (light) */
+body[data-theme="light"] {
+  --vscode-editor-background: #ffffff;
+  --vscode-editor-foreground: #333;
+  --vscode-border: #ccc;
+  --vscode-sideBar-background: #f3f3f3;
+}
+
+/* Dark theme */
+body[data-theme="dark"] {
+  --vscode-editor-background: #1e1e1e;
+  --vscode-editor-foreground: #ccc;
+  --vscode-border: #444;
+  --vscode-sideBar-background: #252526;
+}
+
+/* Jarvis theme (Neon + transparent) */
+body[data-theme="jarvis"] {
+  --vscode-editor-background: rgba(15, 15, 30, 0.85);
+  --vscode-editor-foreground: #0ff;
+  --vscode-border: rgba(0, 255, 255, 0.4);
+  --vscode-sideBar-background: rgba(10, 10, 25, 0.8);
 }
 
 body {
@@ -433,10 +485,11 @@ body {
 .status-bar {
   display: flex;
   background-color: var(--vscode-statusbar-bg);
-  color: white;
+  color: rgb(0, 0, 0);
   font-size: 12px;
   height: 22px;
   padding: 0 8px;
+  font-weight: 600;
 }
 
 .status-item {
@@ -707,6 +760,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  border-radius: 20px;
 }
 
 .chat-output {
@@ -715,6 +769,7 @@ body {
   padding: 10px;
   border: 1px solid #ccc;
   margin-bottom: 10px;
+  border-radius: 20px;
 }
 
 .chat-input {
@@ -727,3 +782,50 @@ body {
   align-self: flex-end;
 }
 
+.clickable-name {
+  color: #007acc;
+  cursor: pointer;
+}
+.clickable-name:hover {
+  text-decoration: underline;
+}
+
+/* Style the scrollbar */
+::-webkit-scrollbar {
+  width: 10px; /* Set width for vertical scrollbar */
+  height: 10px; /* Set height for horizontal scrollbar */
+}
+
+/* Style the track (the empty space behind the thumb) */
+::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0); /* Light gray background */
+  border-radius: 10px; /* Round corners */
+}
+
+/* Style the thumb (the draggable part of the scrollbar) */
+::-webkit-scrollbar-thumb {
+  background-color: #888; /* Dark gray thumb */
+  border-radius: 10px; /* Round corners */
+}
+
+/* Add hover effect on the thumb */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Darker gray when hovered */
+}
+
+/* Optional: Style the corner where the horizontal and vertical scrollbars meet */
+::-webkit-scrollbar-corner {
+  background-color: #f1f1f1;
+}
+#navbar {
+  -webkit-app-region: drag; /* Makes the navbar draggable */
+}
+
+#navbar .navbar-toggler,
+#navbar .nav-link,
+#navbar button {
+  -webkit-app-region: no-drag; /* Prevents dragging on interactive elements */
+}
+nav{
+  background: rgba(0, 17, 255, 0.096);backdrop-filter: blur(10px); box-shadow: 0 15px 32px rgba(0, 0, 0, 0.3);
+}

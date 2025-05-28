@@ -2,6 +2,9 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  closeApp: () => ipcRenderer.send('close'),
+  maximizeApp: () => ipcRenderer.send('maximize'),
+  minimizeApp: () => ipcRenderer.send('minimize'),
   // Directory operations
   openDirectory: () => ipcRenderer.invoke('open-directory'),
   getDirectoryContents: (folderPath) => ipcRenderer.invoke('get-directory-contents', folderPath),
@@ -24,4 +27,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onCommandComplete: (callback) => {
       ipcRenderer.on('command-complete', (event, code) => callback(event, code));
   },
+  getScoopPackageDetails: (pkgName) => ipcRenderer.invoke('get-scoop-details', pkgName),
+  getGitBranches: () => ipcRenderer.invoke('get-branches',dirPath)
 });
