@@ -5,7 +5,7 @@
 **Unified Compiler** is a powerful, extensible, and language-agnostic development platform that compiles and executes code in multiple programming languages through a single unified interface. Designed for developers, educators, and enthusiasts, it streamlines cross-language development by combining a multi-language terminal, intelligent code understanding, and backend compiler APIs.
 
 
-![Unified Compiler](./image.png)
+![Unified Compiler](./image.PNG)
 ---
 
 ## 🎯 Features
